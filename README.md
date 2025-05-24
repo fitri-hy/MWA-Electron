@@ -16,7 +16,7 @@
 
 ## 🖥️ Screenshot
 
-<img src="./ss.png">
+<img src="./ss.jpg">
 
 ---
 
