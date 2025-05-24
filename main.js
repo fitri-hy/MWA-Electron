@@ -98,67 +98,76 @@ function createMainWindow() {
 }
 
 function createNewTab(partitionName = null, reuseId = null) {
-  const id = reuseId || tabCounter++;
-  const partition = partitionName || `persist:tab_${id}`;
+  const id = reuseId ?? tabCounter++;
+  const partition = partitionName ?? `persist:tab_${id}`;
   const chromeUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 
-  if (reuseId && reuseId >= tabCounter) {
+  if (reuseId !== null && reuseId >= tabCounter) {
     tabCounter = reuseId + 1;
   }
 
   const view = new BrowserView({
     webPreferences: {
       contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js'),
-      partition: partition
+      partition: partition,
+      preload: path.join(__dirname, 'src', 'preload.js'),
+      nodeIntegration: false,
+      sandbox: true
     }
   });
 
-  if (partition.startsWith('persist:')) {
-    setTimeout(() => {
-      view.webContents.loadURL('https://web.whatsapp.com', { userAgent: chromeUA });
-    }, 500);
-  } else {
+  const loadWhatsApp = () => {
     view.webContents.loadURL('https://web.whatsapp.com', { userAgent: chromeUA });
+  };
+
+  if (partition.startsWith('persist:')) {
+    setTimeout(loadWhatsApp, 500);
+  } else {
+    loadWhatsApp();
   }
 
   view.webContents.on('did-start-loading', () => {
     mainWindow.webContents.send('tab-loading', { id, loading: true });
   });
+
   view.webContents.on('did-stop-loading', () => {
     mainWindow.webContents.send('tab-loading', { id, loading: false });
   });
+
   view.webContents.on('did-navigate', (_, url) => {
     logHistory(id, url);
   });
+
   view.webContents.on('did-finish-load', () => {
     const darkCSS = `
-      html, body {
-        background-color: #121212 !important;
-        color: #e0e0e0 !important;
-      }
-      ._1N1BB {
-        background-color: #222 !important;
-      }
+		html, body {
+		  background-color: #ffffff !important;
+		  color: #000000 !important;
+		}
+		._1N1BB {
+		  background-color: #f0f0f0 !important;
+		}
     `;
     view.webContents.insertCSS(darkCSS).catch(console.error);
-    view.webContents.insertCSS('body { -webkit-user-select: text !important; }');
+    view.webContents.insertCSS('body { -webkit-user-select: text !important; }').catch(console.error);
+
     view.webContents.executeJavaScript(`
-      window.addEventListener('contextmenu', e => {
-        e.preventDefault();
-        const selection = window.getSelection().toString();
-        if (selection) {
-          navigator.clipboard.writeText(selection).then(() => {
-            console.log('Text copied to clipboard:', selection);
-          });
-        }
-      });
+		window.addEventListener('contextmenu', e => {
+		  e.preventDefault();
+		  const selection = window.getSelection().toString();
+		  if (selection) {
+			navigator.clipboard.writeText(selection).then(() => {
+			  console.log('Text copied to clipboard:', selection);
+			});
+		  }
+		});
     `).catch(console.error);
   });
 
   tabs.push({ id, view, partition });
   mainWindow.webContents.send('add-tab', { id });
   switchTab(id);
+
   return id;
 }
 
@@ -192,21 +201,6 @@ async function closeTab(id) {
   const tab = tabs[index];
   if (mainWindow.getBrowserView() === tab.view) {
     mainWindow.removeBrowserView(tab.view);
-  }
-
-  try {
-    const ses = session.fromPartition(tab.partition);
-    await ses.clearStorageData();
-    const userDataPath = path.join(localAppData, appTitle);
-    const partitionsPath = path.join(userDataPath, 'Partitions');
-    const folderName = tab.partition.replace('persist:', '');
-    const partitionFolderPath = path.join(partitionsPath, folderName);
-
-    if (fs.existsSync(partitionFolderPath)) {
-      fs.rmSync(partitionFolderPath, { recursive: true, force: true });
-    }
-  } catch (err) {
-    console.error('Error clearing session or deleting folder:', err);
   }
 
   tab.view.webContents.destroy();
@@ -283,7 +277,7 @@ function createAppMenu() {
   Menu.setApplicationMenu(menu);
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   createAppMenu();
   createMainWindow();
 
@@ -298,7 +292,9 @@ app.whenReady().then(() => {
 
   const savedData = loadTabs();
   if (savedData.tabs.length > 0) {
-    savedData.tabs.forEach(t => createNewTab(t.partition, t.id));
+    for (const t of savedData.tabs) {
+      await createNewTab(t.partition, t.id);
+    }
     if (savedData.activeTabId) switchTab(savedData.activeTabId);
   } else {
     createNewTab();
