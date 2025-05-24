@@ -1,13 +1,16 @@
 const { app, BrowserWindow, BrowserView, ipcMain, session, Menu } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 
 let mainWindow;
 let tabCounter = 1;
 let tabs = [];
 let activeTabId = null;
 
-const userDataPath = app.getPath('userData');
+const localAppData = process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local');
+const appTitle = 'M-WA';
+const userDataPath = path.join(localAppData, appTitle);
 const sessionFolder = path.join(userDataPath, 'session');
 const tabsFile = path.join(userDataPath, 'tabs.json');
 
@@ -194,7 +197,7 @@ async function closeTab(id) {
   try {
     const ses = session.fromPartition(tab.partition);
     await ses.clearStorageData();
-    const userDataPath = app.getPath('userData');
+    const userDataPath = path.join(localAppData, appTitle);
     const partitionsPath = path.join(userDataPath, 'Partitions');
     const folderName = tab.partition.replace('persist:', '');
     const partitionFolderPath = path.join(partitionsPath, folderName);
@@ -238,7 +241,7 @@ function clearAllData() {
   Promise.allSettled(clearPromises).then(() => {
     setTimeout(() => {
       try {
-        const userDataPath = app.getPath('userData');
+        const userDataPath = path.join(localAppData, appTitle);
         const partitionsPath = path.join(userDataPath, 'Partitions');
         const multiTabPath = path.join(__dirname, 'multi-tab-browser');
 
