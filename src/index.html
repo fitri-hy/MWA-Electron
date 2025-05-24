@@ -27,22 +27,24 @@
 			color: #1c1c1c;
 		}
 		button#new-tab-btn {
-			background-color: #d9d9d9;
 			color: #1c1c1c;
-			border: none;
-			padding: 3px 6px;
-			font-size: 10px;
-			border-radius: 3px;
+			background-color: transparent;
+			border: 1px solid #c7c7c7;
+			padding: 2px 5px;
+			font-size: 12px;
+			border-radius: 2px;
 			cursor: pointer;
-			transition: background-color 0.2s;
+			transition: background-color 0.2s, border-color 0.2s;
 		}
+
 		button#new-tab-btn:hover {
-			background-color: #c2c2c2;
+			background-color: #e6e6e6;
+			border-color: transparent;
 		}
 		#tabs {
 			display: flex;
-			gap: 8px;
-			margin-left: 8px;
+			gap: 4px;
+			margin-left: 4px;
 			overflow-x: auto;
 			scrollbar-width: thin;
 			scrollbar-color: #d9d9d9 transparent;
@@ -58,15 +60,16 @@
 			background-color: transparent;
 		}
 		.tab {
-			background: #d9d9d9;
+			background-color: transparent;
+			border-bottom: 1px solid #c7c7c7;
 			color: #1c1c1c;
-			padding: 3px 6px;
+			padding: 2px 5px;
 			font-size: 10px;
-			border-radius: 3px;
+			border-radius: 2px;
 			cursor: pointer;
 			display: flex;
 			align-items: center;
-			gap: 3px;
+			gap: 4px;
 			min-width: 50px;
 			user-select: none;
 			transition: background-color 0.2s, color 0.2s;
@@ -95,19 +98,23 @@
 			transition: color 0.2s, background-color 0.2s;
 		}
 		.tab .reload:hover {
-			color: #8c7c03;
-			background-color: #c2c2c2;
+			color: #b00c0c;
+			background-color: #e6e6e6; 
+			border: none;
 		}
 		.close {
-			color: #780707;
-			background-color: #c2c2c2;
+			color: #d40000;
+			background-color: #e6e6e6;  
+			border: none;
 		}
 		.tab .close:hover {
 			color: #b00c0c;
-			background-color: #c2c2c2;
+			background-color: #e6e6e6; 
+			border: none;
 		}
 		.tab:hover {
-			background-color: #c2c2c2;
+			background-color: #e6e6e6;
+			border: none;
 		}
 	</style>
 </head>

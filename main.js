@@ -1,4 +1,4 @@
-const { app, BrowserWindow, BrowserView, ipcMain, session, Menu } = require('electron');
+const { app, BrowserWindow, BrowserView, ipcMain, session, Menu, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -271,6 +271,17 @@ function createAppMenu() {
           click: () => clearAllData()
         },
         { role: 'quit' }
+      ]
+    },
+    {
+      label: 'Developer',
+      submenu: [
+        {
+          label: 'I-As Dev',
+          click: async () => {
+            await shell.openExternal('https://i-as.dev/');
+          }
+        }
       ]
     }
   ]);
