@@ -80,6 +80,19 @@ function injectThemeCSS(view, theme) {
   view.webContents.insertCSS('body { -webkit-user-select: text !important; }').catch(console.error);
 }
 
+function resizeActiveTabView() {
+  const tab = tabs.find(t => t.id === activeTabId);
+  if (tab && tab.view) {
+    const [width, height] = mainWindow.getContentSize();
+    tab.view.setBounds({
+      x: 0,
+      y: 35,
+      width: width,
+      height: height - 35
+    });
+  }
+}
+
 function createMainWindow() {
   mainWindow = new BrowserWindow({
     width: 1400,
@@ -97,28 +110,21 @@ function createMainWindow() {
   mainWindow.maximize();
 
   mainWindow.on('resize', () => {
-    const tab = tabs.find(t => t.id === activeTabId);
-    if (tab && tab.view) {
-      const [width, height] = mainWindow.getContentSize();
-      tab.view.setBounds({
-        x: 0,
-        y: 35,
-        width: width,
-        height: height - 35
-      });
-    }
+    resizeActiveTabView();
   });
 
+  mainWindow.on('maximize', () => {
+    resizeActiveTabView();
+  });
+
+  mainWindow.on('unmaximize', () => {
+    resizeActiveTabView();
+  });
+  
   mainWindow.once('ready-to-show', () => {
+    resizeActiveTabView();
     const tab = tabs.find(t => t.id === activeTabId);
     if (tab && tab.view) {
-      const [width, height] = mainWindow.getContentSize();
-      tab.view.setBounds({
-        x: 0,
-        y: 35,
-        width: width,
-        height: height - 35
-      });
       tab.view.setAutoResize({ width: true, height: true });
     }
   });
@@ -325,7 +331,7 @@ function createAppMenu() {
       label: 'Github',
       submenu: [
         {
-          label: 'I-As Dev',
+          label: 'Fitri HY',
           click: async () => {
             await shell.openExternal('https://github.com/fitri-hy/MWA-Electron');
           }
