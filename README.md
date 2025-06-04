@@ -11,12 +11,13 @@
 * ✅ Sessions are saved locally—no need to log in every time
 * ✅ Lightweight and easy-to-use interface
 * ✅ Built with Electron + Node.js
+* ✅ Dark & Light Mode
 
 ---
 
 ## 🖥️ Screenshot
 
-<img src="./ss.jpg">
+<img src="./sss.jpg">
 
 ---
 
@@ -39,6 +40,12 @@ npm install
 
 ```bash
 npm start
+```
+
+### 3. Build the app
+
+```bash
+npm run build
 ```
 
 ---
