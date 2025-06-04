@@ -274,12 +274,12 @@ function createAppMenu() {
       ]
     },
     {
-      label: 'Developer',
+      label: 'Github',
       submenu: [
         {
           label: 'I-As Dev',
           click: async () => {
-            await shell.openExternal('https://i-as.dev/');
+            await shell.openExternal('https://github.com/fitri-hy/MWA-Electron');
           }
         }
       ]
