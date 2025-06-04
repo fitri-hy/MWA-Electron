@@ -58,15 +58,6 @@ npm run build
 
 ---
 
-## Demo
-
-Download:
-[M-WA_Setup_1.0.0_(040624-1).exe](https://drive.google.com/file/d/1w-cFqfXIjlVcGbzvk7QMp_cBxo_kHpey/view?usp=sharing)
-
-> Has been tested on windows 10 pro
-
----
-
 ## 📄 License
 
 This project is licensed under the [MIT License](LICENSE). Feel free to use, modify, and distribute it as needed.
