@@ -125,6 +125,18 @@ function createNewTab(partitionName = null, reuseId = null) {
   } else {
     loadWhatsApp();
   }
+  
+  view.webContents.setWindowOpenHandler(({ url }) => {
+    shell.openExternal(url);
+    return { action: 'deny' };
+  });
+  
+  view.webContents.on('will-navigate', (event, url) => {
+    if (!url.startsWith('https://web.whatsapp.com')) {
+      event.preventDefault();
+      shell.openExternal(url);
+    }
+  });
 
   view.webContents.on('did-start-loading', () => {
     mainWindow.webContents.send('tab-loading', { id, loading: true });
