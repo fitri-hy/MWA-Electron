@@ -1,4 +1,4 @@
-const { app, BrowserWindow, BrowserView, ipcMain, session, Menu, shell } = require('electron');
+const { app, BrowserWindow, BrowserView, ipcMain, session, Menu, shell, nativeTheme } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -17,6 +17,8 @@ const tabsFile = path.join(userDataPath, 'tabs.json');
 if (!fs.existsSync(sessionFolder)) {
   fs.mkdirSync(sessionFolder, { recursive: true });
 }
+
+app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 
 function saveTabs() {
   const savedTabs = tabs.map(t => ({ id: t.id, partition: t.partition }));
@@ -51,6 +53,31 @@ function logHistory(tabId, url) {
   history.push({ timestamp: Date.now(), url });
   history = history.slice(-100);
   fs.writeFileSync(filePath, JSON.stringify(history, null, 2));
+}
+
+function injectThemeCSS(view, theme) {
+  const darkCSS = `
+    html, body {
+      background-color: #121212 !important;
+      color: #e0e0e0 !important;
+    }
+    ._1N1BB {
+      background-color: #1f1f1f !important;
+    }
+  `;
+
+  const lightCSS = `
+    html, body {
+      background-color: #ffffff !important;
+      color: #000000 !important;
+    }
+    ._1N1BB {
+      background-color: #f0f0f0 !important;
+    }
+  `;
+
+  view.webContents.insertCSS(theme === 'dark' ? darkCSS : lightCSS).catch(console.error);
+  view.webContents.insertCSS('body { -webkit-user-select: text !important; }').catch(console.error);
 }
 
 function createMainWindow() {
@@ -112,7 +139,12 @@ function createNewTab(partitionName = null, reuseId = null) {
       partition: partition,
       preload: path.join(__dirname, 'src', 'preload.js'),
       nodeIntegration: false,
-      sandbox: true
+      sandbox: false,
+      autoplayPolicy: 'no-user-gesture-required',
+      webSecurity: false,
+      plugins: true,
+      enableBlinkFeatures: 'MediaSessionService',
+      allowRunningInsecureContent: false,
     }
   });
 
@@ -125,12 +157,12 @@ function createNewTab(partitionName = null, reuseId = null) {
   } else {
     loadWhatsApp();
   }
-  
+
   view.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
     return { action: 'deny' };
   });
-  
+
   view.webContents.on('will-navigate', (event, url) => {
     if (!url.startsWith('https://web.whatsapp.com')) {
       event.preventDefault();
@@ -151,29 +183,25 @@ function createNewTab(partitionName = null, reuseId = null) {
   });
 
   view.webContents.on('did-finish-load', () => {
-    const darkCSS = `
-		html, body {
-		  background-color: #ffffff !important;
-		  color: #000000 !important;
-		}
-		._1N1BB {
-		  background-color: #f0f0f0 !important;
-		}
-    `;
-    view.webContents.insertCSS(darkCSS).catch(console.error);
-    view.webContents.insertCSS('body { -webkit-user-select: text !important; }').catch(console.error);
+    mainWindow.webContents.send('theme-updated', nativeTheme.shouldUseDarkColors ? 'dark' : 'light');
 
     view.webContents.executeJavaScript(`
-		window.addEventListener('contextmenu', e => {
-		  e.preventDefault();
-		  const selection = window.getSelection().toString();
-		  if (selection) {
-			navigator.clipboard.writeText(selection).then(() => {
-			  console.log('Text copied to clipboard:', selection);
-			});
-		  }
-		});
+      const mediaEls = [...document.querySelectorAll('video, audio')];
+      mediaEls.forEach(el => el.play().catch(e => console.error('Error saat play media:', e)));
+      const event = new MouseEvent('click', { bubbles: true, cancelable: true });
+      document.body.dispatchEvent(event);
     `).catch(console.error);
+  });
+
+  nativeTheme.on('updated', () => {
+    if (mainWindow) {
+      const theme = nativeTheme.shouldUseDarkColors ? 'dark' : 'light';
+      mainWindow.webContents.send('theme-updated', theme);
+
+      tabs.forEach(tab => {
+        injectThemeCSS(tab.view, theme);
+      });
+    }
   });
 
   tabs.push({ id, view, partition });
@@ -286,6 +314,14 @@ function createAppMenu() {
       ]
     },
     {
+      label: 'Theme',
+      click: () => {
+        const isDark = nativeTheme.shouldUseDarkColors;
+        nativeTheme.themeSource = isDark ? 'light' : 'dark';
+        mainWindow?.webContents.send('theme-updated', nativeTheme.themeSource);
+      }
+    },
+    {
       label: 'Github',
       submenu: [
         {
@@ -303,6 +339,18 @@ function createAppMenu() {
 app.whenReady().then(async () => {
   createAppMenu();
   createMainWindow();
+
+  session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
+    const url = webContents.getURL();
+    console.log(`Request permission: ${permission} dari ${url}`);
+    if (url.startsWith('https://web.whatsapp.com')) {
+      if (['media', 'camera', 'microphone', 'fullscreen', 'mediaKeySystem'].includes(permission)) {
+        callback(true);
+        return;
+      }
+    }
+    callback(false);
+  });
 
   ipcMain.handle('new-tab', () => createNewTab());
   ipcMain.handle('reload-tab', (event, id) => {

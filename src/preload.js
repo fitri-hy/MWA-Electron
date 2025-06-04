@@ -7,5 +7,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
 	closeTab: (id) => ipcRenderer.invoke('close-tab', id),
 	onAddTab: (cb) => ipcRenderer.on('add-tab', (e, data) => cb(data)),
 	onRemoveTab: (cb) => ipcRenderer.on('remove-tab', (e, id) => cb(id)),
-	onTabLoading: (cb) => ipcRenderer.on('tab-loading', (e, data) => cb(data))
+	onTabLoading: (cb) => ipcRenderer.on('tab-loading', (e, data) => cb(data)),
+	onThemeUpdated: (callback) => ipcRenderer.on('theme-updated', callback),
 });

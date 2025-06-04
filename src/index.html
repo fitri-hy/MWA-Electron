@@ -1,176 +1,244 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-	<meta charset="UTF-8">
-	<title>M-WA</title>
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<style>
-		#tab-bar {
-			position: fixed;
-			top: 0; left: 0; right: 0;
-			height: 35px;
-			display: flex;
-			align-items: center;
-			padding: 0 12px;
-			z-index: 1000;
-			box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-			background-color: #ffffff;
-			border-bottom: 1px solid #444;
-			user-select: none;
-		}
-		body {
-			margin: 0;
-			padding-top: 35px;
-			overflow: hidden;
-			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-			background-color: #ffffff;
-			color: #1c1c1c;
-		}
-		button#new-tab-btn {
-			color: #1c1c1c;
-			background-color: transparent;
-			border: 1px solid #c7c7c7;
-			padding: 2px 5px;
-			font-size: 12px;
-			border-radius: 2px;
-			cursor: pointer;
-			transition: background-color 0.2s, border-color 0.2s;
-		}
+<meta charset="UTF-8" />
+<title>M-WA</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  /* ===== Base Light Theme ===== */
+  body {
+    margin: 0;
+    padding-top: 35px;
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #ffffff;
+    color: #1c1c1c;
+  }
+  #tab-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    z-index: 1000;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    background-color: #ffffff;
+    border-bottom: 1px solid #444;
+    user-select: none;
+  }
+  button#new-tab-btn {
+    color: #1c1c1c;
+    background-color: transparent;
+    border: 1px solid #c7c7c7;
+    padding: 2px 5px;
+    font-size: 12px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+  }
+  button#new-tab-btn:hover {
+    background-color: #e6e6e6;
+    border-color: transparent;
+  }
+  #tabs {
+    display: flex;
+    gap: 4px;
+    margin-left: 4px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #d9d9d9 transparent;
+  }
+  #tabs::-webkit-scrollbar {
+    height: 6px;
+  }
+  #tabs::-webkit-scrollbar-thumb {
+    background-color: #d9d9d9;
+    border-radius: 3px;
+  }
+  #tabs::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+  .tab {
+    background-color: transparent;
+    border-bottom: 1px solid #c7c7c7;
+    color: #1c1c1c;
+    padding: 2px 5px;
+    font-size: 10px;
+    border-radius: 2px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 50px;
+    user-select: none;
+    transition: background-color 0.2s, color 0.2s;
+    position: relative;
+  }
+  .tab.loading::after {
+    content: '⏳';
+    position: absolute;
+    right: 3px;
+    font-size: 10px;
+    animation: spin 1.2s linear infinite;
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg);}
+    100% { transform: rotate(360deg);}
+  }
+  .tab .reload,
+  .tab .close {
+    background: transparent;
+    border: none;
+    font-weight: bold;
+    font-size: 10px;
+    cursor: pointer;
+    padding: 0 3px;
+    border-radius: 3px;
+    transition: color 0.2s, background-color 0.2s;
+  }
+  .tab .reload {
+    color: #1c1c1c;
+  }
+  .tab .close {
+    color: #d40000;
+    background-color: #e6e6e6;
+  }
+  .tab:hover {
+    background-color: #e6e6e6;
+    border: none;
+  }
+  .tab .reload:hover {
+    color: #b00c0c;
+    background-color: #e6e6e6;
+  }
+  .tab .close:hover {
+    color: #b00c0c;
+    background-color: #e6e6e6;
+  }
 
-		button#new-tab-btn:hover {
-			background-color: #e6e6e6;
-			border-color: transparent;
-		}
-		#tabs {
-			display: flex;
-			gap: 4px;
-			margin-left: 4px;
-			overflow-x: auto;
-			scrollbar-width: thin;
-			scrollbar-color: #d9d9d9 transparent;
-		}
-		#tabs::-webkit-scrollbar {
-			height: 6px;
-		}
-		#tabs::-webkit-scrollbar-thumb {
-			background-color: #d9d9d9;
-			border-radius: 3px;
-		}
-		#tabs::-webkit-scrollbar-track {
-			background-color: transparent;
-		}
-		.tab {
-			background-color: transparent;
-			border-bottom: 1px solid #c7c7c7;
-			color: #1c1c1c;
-			padding: 2px 5px;
-			font-size: 10px;
-			border-radius: 2px;
-			cursor: pointer;
-			display: flex;
-			align-items: center;
-			gap: 4px;
-			min-width: 50px;
-			user-select: none;
-			transition: background-color 0.2s, color 0.2s;
-			position: relative;
-		}
-		.tab.loading::after {
-			content: '⏳';
-			position: absolute;
-			right: 3px;
-			font-size: 10px;
-			animation: spin 1.2s linear infinite;
-		}
-		@keyframes spin {
-			0% { transform: rotate(0deg);}
-			100% { transform: rotate(360deg);}
-		}
-		.tab .reload, .tab .close {
-			background: transparent;
-			border: none;
-			color: #1c1c1c;
-			font-weight: bold;
-			font-size: 10px;
-			cursor: pointer;
-			padding: 0 3px;
-			border-radius: 3px;
-			transition: color 0.2s, background-color 0.2s;
-		}
-		.tab .reload:hover {
-			color: #b00c0c;
-			background-color: #e6e6e6; 
-			border: none;
-		}
-		.close {
-			color: #d40000;
-			background-color: #e6e6e6;  
-			border: none;
-		}
-		.tab .close:hover {
-			color: #b00c0c;
-			background-color: #e6e6e6; 
-			border: none;
-		}
-		.tab:hover {
-			background-color: #e6e6e6;
-			border: none;
-		}
-	</style>
+  /* ===== Dark Theme ===== */
+  body.dark {
+    background-color: #121212;
+    color: #e0e0e0;
+  }
+  body.dark #tab-bar {
+    background-color: #1f1f1f;
+    border-bottom: 1px solid #555;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.9);
+  }
+  body.dark button#new-tab-btn {
+    color: #e0e0e0;
+    border: 1px solid #555;
+    background-color: transparent;
+  }
+  body.dark button#new-tab-btn:hover {
+    background-color: #333;
+    border-color: transparent;
+  }
+  body.dark #tabs::-webkit-scrollbar-thumb {
+    background-color: #555;
+  }
+  body.dark .tab {
+    color: #e0e0e0;
+    border-bottom: 1px solid #555;
+    background-color: transparent;
+  }
+  body.dark .tab:hover {
+    background-color: #333;
+    border: none;
+  }
+  body.dark .tab .reload,
+  body.dark .tab .close {
+    color: #e0e0e0;
+    background-color: transparent;
+  }
+  body.dark .tab .close {
+    color: #ff6666;
+    background-color: #2a2a2a;
+  }
+  body.dark .tab .reload:hover {
+    color: #ff4c4c;
+    background-color: #333;
+  }
+  body.dark .tab .close:hover {
+    color: #ff4c4c;
+    background-color: #333;
+  }
+</style>
 </head>
 <body>
-	<div id="tab-bar">
-		<button id="new-tab-btn" onclick="newTab()">+</button>
-		<div id="tabs"></div>
-	</div>
-	<script>
-		const tabsEl = document.getElementById('tabs');
-		const tabs = {};
-		function newTab() {
-			window.electronAPI.newTab();
-		}
-		function createTabElement(id) {
-			const tab = document.createElement('div');
-			tab.className = 'tab';
-			tab.textContent = `Tab ${id}`;
-			tab.onclick = () => window.electronAPI.switchTab(id);
-			const reload = document.createElement('button');
-			reload.className = 'reload';
-			reload.textContent = '⟳';
-			reload.title = 'Reload Tab';
-  			reload.onclick = (e) => {
-				e.stopPropagation();
-				window.electronAPI.reloadTab(id);
-			};
-			const close = document.createElement('button');
-			close.className = 'close';
-			close.textContent = '×';
-			close.title = 'Close Tab';
-			close.onclick = (e) => {
-				e.stopPropagation();
-				window.electronAPI.closeTab(id);
-			};
-			tab.textContent = '';
-			tab.appendChild(document.createTextNode(`Tab ${id}`));
-			tab.appendChild(reload);
-			tab.appendChild(close);
-			tabs[id] = tab;
-			tabsEl.appendChild(tab);
-		}
-		window.electronAPI.onAddTab(data => {
-			createTabElement(data.id);
-		});
-		window.electronAPI.onRemoveTab(id => {
-			if (tabs[id]) {
-				tabs[id].remove();
-				delete tabs[id];
-			}
-		});
-		window.electronAPI.onTabLoading(data => {
-			if (tabs[data.id]) {
-				tabs[data.id].classList.toggle('loading', data.loading);
-			}
-		});
-	</script>
+  <div id="tab-bar">
+    <button id="new-tab-btn" onclick="newTab()">+</button>
+    <div id="tabs"></div>
+  </div>
+  <script>
+    const tabsEl = document.getElementById('tabs');
+    const tabs = {};
+
+    function newTab() {
+      window.electronAPI.newTab();
+    }
+
+    function createTabElement(id) {
+      const tab = document.createElement('div');
+      tab.className = 'tab';
+      tab.onclick = () => window.electronAPI.switchTab(id);
+
+      const reload = document.createElement('button');
+      reload.className = 'reload';
+      reload.textContent = '⟳';
+      reload.title = 'Reload Tab';
+      reload.onclick = e => {
+        e.stopPropagation();
+        window.electronAPI.reloadTab(id);
+      };
+
+      const close = document.createElement('button');
+      close.className = 'close';
+      close.textContent = '×';
+      close.title = 'Close Tab';
+      close.onclick = e => {
+        e.stopPropagation();
+        window.electronAPI.closeTab(id);
+      };
+
+      tab.textContent = `Tab ${id}`;
+      tab.appendChild(reload);
+      tab.appendChild(close);
+
+      tabs[id] = tab;
+      tabsEl.appendChild(tab);
+    }
+
+    window.electronAPI.onAddTab(data => {
+      createTabElement(data.id);
+    });
+
+    window.electronAPI.onRemoveTab(id => {
+      if (tabs[id]) {
+        tabs[id].remove();
+        delete tabs[id];
+      }
+    });
+
+    window.electronAPI.onTabLoading(data => {
+      if (tabs[data.id]) {
+        tabs[data.id].classList.toggle('loading', data.loading);
+      }
+    });
+
+    function applyTheme(theme) {
+      if (theme === 'dark') {
+        document.body.classList.add('dark');
+      } else {
+        document.body.classList.remove('dark');
+      }
+    }
+
+    window.electronAPI.onThemeUpdated((event, theme) => {
+      applyTheme(theme);
+    });
+  </script>
 </body>
 </html>
