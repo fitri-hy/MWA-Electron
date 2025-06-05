@@ -1,4 +1,3 @@
-require('electron-reload')(__dirname);
 const { app, BrowserWindow, BrowserView, ipcMain, session, Menu, shell, nativeTheme } = require('electron');
 const path = require('path');
 const fs = require('fs');
@@ -398,7 +397,7 @@ function createAppMenu() {
       ]
     },
     {
-      label: 'Product',
+      label: 'Notes/Products',
       click: () => createProductWindow()
     }
   ]);

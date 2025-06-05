@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Products | MWA</title>
+  <title>Notes/Products | MWA</title>
   <style>
     body {
 		margin: 0;
@@ -324,10 +324,10 @@
 <body>
 	<div class="top-bar">
 		<div class="left-section">
-			<button id="add-product-btn">Add Product</button>
+			<button id="add-product-btn">Add Data</button>
 		</div>
 		<div id="search-container">
-			<input type="text" id="search-input" placeholder="Search products ..." />
+			<input type="text" id="search-input" placeholder="Search ..." />
 		</div>
 	</div>
   
@@ -346,11 +346,11 @@
 	
 	<div id="modal-backdrop"></div>
 	<div id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-    <h2 id="modal-title">Add Product</h2>
+    <h2 id="modal-title">Add Data</h2>
 		<form id="modal-form">
 			<input type="hidden" id="product-id" />
-			<input type="text" id="product-name" placeholder="Product name" required />
-			<textarea id="product-description" placeholder="Product description" required></textarea>
+			<input type="text" id="product-name" placeholder="Data title" required />
+			<textarea id="product-description" placeholder="Data description" required></textarea>
 			<div style="display:flex; gap:12px; margin-top:12px;">
 				<button type="submit">Save</button>
 				<button type="button" id="cancel-btn">Cancel</button>
@@ -372,7 +372,7 @@
 
 	  let allProducts = [];
 
-	  function openModal(title = "Add Product") {
+	  function openModal(title = "Add Data") {
 		modal.querySelector('#modal-title').textContent = title;
 		modal.style.display = 'block';
 		modalBackdrop.style.display = 'block';
@@ -401,9 +401,9 @@
 		try {
 		  const success = document.execCommand('copy');
 		  if (success) {
-			alert('Product copied successfully!');
+			alert('Data copied successfully!');
 		  } else {
-			alert('Failed to copy product.');
+			alert('Failed to copy data.');
 		  }
 		} catch (err) {
 		  alert('The browser does not support the copy function.');
@@ -414,7 +414,7 @@
 	  function renderProducts(products) {
 		productList.innerHTML = '';
 		if (products.length === 0) {
-		  productList.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 15px;">Products not found.</td></tr>';
+		  productList.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 15px;">Data Not Found.</td></tr>';
 		  return;
 		}
 
@@ -437,7 +437,7 @@
 			if (navigator.clipboard && navigator.clipboard.writeText) {
 			  try {
 				await navigator.clipboard.writeText(textToCopy);
-				alert('Product was copied successfully!');
+				alert('Data was copied successfully!');
 			  } catch {
 				copyText(textToCopy);
 			  }
@@ -488,14 +488,14 @@
 		productIdInput.value = product.id;
 		productNameInput.value = product.name;
 		productDescriptionInput.value = product.description;
-		openModal("Edit Product");
+		openModal("Edit Data");
 	  }
 
 	  cancelBtn.onclick = closeModal;
 	  modalBackdrop.onclick = closeModal;
 
 	  async function deleteProduct(id) {
-		if (confirm('Are you sure you want to delete this product?')) {
+		if (confirm('Are you sure you want to delete this data?')) {
 		  await window.productAPI.deleteProduct(id);
 		  await loadProducts();
 		  closeModal();
@@ -522,7 +522,7 @@
 
 	  addProductBtn.onclick = () => {
 		clearForm();
-		openModal("Add Product");
+		openModal("Add Data");
 	  };
 
 	  searchInput.addEventListener('input', filterAndRender);
