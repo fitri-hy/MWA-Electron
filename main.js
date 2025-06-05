@@ -1,4 +1,4 @@
-const { app, BrowserWindow, BrowserView, ipcMain, session, Menu, shell, nativeTheme } = require('electron');
+const { app, BrowserWindow, BrowserView, ipcMain, session, Menu, shell, nativeTheme, globalShortcut  } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -419,6 +419,32 @@ app.whenReady().then(async () => {
     }
     callback(false);
   });
+  
+  globalShortcut.register('Control+Tab', () => {
+    if (tabs.length === 0) return;
+
+    // Cari index tab aktif
+    const currentIndex = tabs.findIndex(t => t.id === activeTabId);
+    if (currentIndex === -1) return;
+
+    // Hitung index tab berikutnya (loop)
+    const nextIndex = (currentIndex + 1) % tabs.length;
+
+    // Switch tab berikutnya
+    switchTab(tabs[nextIndex].id);
+  });
+
+  // register Ctrl+Shift+Tab untuk pindah ke tab sebelumnya (optional)
+  globalShortcut.register('Control+Shift+Tab', () => {
+    if (tabs.length === 0) return;
+
+    const currentIndex = tabs.findIndex(t => t.id === activeTabId);
+    if (currentIndex === -1) return;
+
+    const prevIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+
+    switchTab(tabs[prevIndex].id);
+  });
 
   ipcMain.handle('new-tab', () => createNewTab());
   ipcMain.handle('reload-tab', (event, id) => {
@@ -474,4 +500,8 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }
+});
+
+app.on('will-quit', () => {
+  globalShortcut.unregisterAll();
 });

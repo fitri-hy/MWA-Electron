@@ -13,6 +13,20 @@
     background-color: #ffffff;
     color: #1c1c1c;
   }
+  
+  .tab.active {
+    border-bottom: 1px solid #26bf75;
+    font-weight: 600;
+    color: #19a662;
+    background-color: #ebfcf4;
+  }
+
+  body.dark .tab.active {
+    border-bottom: 1px solid #038a48;
+    color: white;
+    background-color: #01381d;
+  }
+  
   #tab-bar {
     position: fixed;
     top: 0; left: 0; right: 0;
@@ -170,73 +184,88 @@
     <button id="new-tab-btn" onclick="newTab()">+</button>
     <div id="tabs"></div>
   </div>
-  <script>
-    const tabsEl = document.getElementById('tabs');
-    const tabs = {};
+<script>
+  const tabsEl = document.getElementById('tabs');
+  const tabs = {};
 
-    function newTab() {
-      window.electronAPI.newTab();
+  function newTab() {
+    window.electronAPI.newTab();
+  }
+  
+  document.addEventListener('keydown', e => {
+    if (e.ctrlKey && e.key.toLowerCase() === 'n') {
+      e.preventDefault();
+      newTab();
     }
+  });
 
-    function createTabElement(id) {
-      const tab = document.createElement('div');
-      tab.className = 'tab';
-      tab.onclick = () => window.electronAPI.switchTab(id);
+  function createTabElement(id) {
+    const tab = document.createElement('div');
+    tab.className = 'tab';
+    tab.onclick = () => window.electronAPI.switchTab(id);
 
-      const reload = document.createElement('button');
-      reload.className = 'reload';
-      reload.textContent = '⟳';
-      reload.title = 'Reload Tab';
-      reload.onclick = e => {
-        e.stopPropagation();
-        window.electronAPI.reloadTab(id);
-      };
+    const reload = document.createElement('button');
+    reload.className = 'reload';
+    reload.textContent = '⟳';
+    reload.title = 'Reload Tab';
+    reload.onclick = e => {
+      e.stopPropagation();
+      window.electronAPI.reloadTab(id);
+    };
 
-      const close = document.createElement('button');
-      close.className = 'close';
-      close.textContent = '×';
-      close.title = 'Close Tab';
-      close.onclick = e => {
-        e.stopPropagation();
-        window.electronAPI.closeTab(id);
-      };
+    const close = document.createElement('button');
+    close.className = 'close';
+    close.textContent = '×';
+    close.title = 'Close Tab';
+    close.onclick = e => {
+      e.stopPropagation();
+      window.electronAPI.closeTab(id);
+    };
 
-      tab.textContent = `Tab ${id}`;
-      tab.appendChild(reload);
-      tab.appendChild(close);
+    tab.textContent = `Tab ${id}`;
+    tab.appendChild(reload);
+    tab.appendChild(close);
 
-      tabs[id] = tab;
-      tabsEl.appendChild(tab);
+    tabs[id] = tab;
+    tabsEl.appendChild(tab);
+  }
+
+  window.electronAPI.onAddTab(data => {
+    createTabElement(data.id);
+  });
+
+  window.electronAPI.onRemoveTab(id => {
+    if (tabs[id]) {
+      tabs[id].remove();
+      delete tabs[id];
     }
+  });
 
-    window.electronAPI.onAddTab(data => {
-      createTabElement(data.id);
-    });
-
-    window.electronAPI.onRemoveTab(id => {
-      if (tabs[id]) {
-        tabs[id].remove();
-        delete tabs[id];
-      }
-    });
-
-    window.electronAPI.onTabLoading(data => {
-      if (tabs[data.id]) {
-        tabs[data.id].classList.toggle('loading', data.loading);
-      }
-    });
-
-    function applyTheme(theme) {
-      if (theme === 'dark') {
-        document.body.classList.add('dark');
-      } else {
-        document.body.classList.remove('dark');
-      }
+  window.electronAPI.onTabLoading(data => {
+    if (tabs[data.id]) {
+      tabs[data.id].classList.toggle('loading', data.loading);
     }
+  });
 
-    window.electronAPI.onThemeUpdated((event, theme) => {
-      applyTheme(theme);
-    });
-  </script>
+  window.electronAPI.onSwitchTab(id => {
+    Object.values(tabs).forEach(tabEl => tabEl.classList.remove('active'));
+    if (tabs[id]) {
+      tabs[id].classList.add('active');
+    }
+  });
+
+  function applyTheme(theme) {
+    if (theme === 'dark') {
+      document.body.classList.add('dark');
+    } else {
+      document.body.classList.remove('dark');
+    }
+  }
+
+  window.electronAPI.onThemeUpdated((event, theme) => {
+    applyTheme(theme);
+  });
+</script>
+
 </body>
 </html>

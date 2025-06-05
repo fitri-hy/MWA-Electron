@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 	onRemoveTab: (cb) => ipcRenderer.on('remove-tab', (e, id) => cb(id)),
 	onTabLoading: (cb) => ipcRenderer.on('tab-loading', (e, data) => cb(data)),
 	onThemeUpdated: (callback) => ipcRenderer.on('theme-updated', callback),
+	onSwitchTab: (callback) => ipcRenderer.on('switch-tab', (event, id) => callback(id)),
 });
 
 contextBridge.exposeInMainWorld('productAPI', {
