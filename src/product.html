@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Products | MWA</title>
+  <style>
+    body {
+		margin: 0;
+		padding: 10px 10px 10px 10px;
+		font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+		background-color: #ffffff;
+		color: #1c1c1c;
+		transition: background-color 0.3s, color 0.3s;
+    }
+    body.dark {
+		background-color: #121212;
+		color: #e0e0e0;
+    }
+
+	.top-bar {
+	  display: flex;
+	  align-items: center;
+	  gap: 16px;
+	  width: 100%;
+      margin: 0 auto 10px;
+	}
+	
+	.left-section {
+	  display: flex;
+	  align-items: center;
+	  width: 100%;
+	}
+	
+    #add-product-btn {
+      display: block;
+      padding: 10px;
+      background-color: #26bf75;
+      border: none;
+      border-radius: 3px;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+	
+    body.dark #add-product-btn {
+      background-color: #077841;
+      color: white;
+    }
+	
+    #add-product-btn:hover {
+      background-color: #089e55;
+    }
+	
+	body.dark #add-product-btn:hover {
+      background-color: #089e55;
+    }
+	
+    #search-container {
+      display: flex;
+	  align-items: center;
+	  flex: none;
+      display: flex;
+      justify-content: center;
+    }
+	
+    #search-input {
+      width: 100%;
+      max-width: 600px;
+      padding: 10px;
+      border-radius: 3px;
+      border: 1px solid #e3e3e3;
+      transition: border-color 0.3s, background-color 0.3s, color 0.3s;
+      background-color: #fff;
+      color: #1c1c1c;
+    }
+	
+    #search-input:focus {
+      outline: none;
+      border-color: #26bf75;
+      background-color: #fff;
+    }
+	
+    body.dark #search-input {
+      background-color: #1c1c1c;
+      border-color: #555;
+      color: #e0e0e0;
+    }
+    body.dark #search-input:focus {
+      background-color: #262626;
+      color: #fff;
+      border-color: #077841;
+    }
+	
+	.table-wrapper {
+	  width: 100%;
+	  overflow-x: auto;
+	}
+
+	table {
+	  width: 100%;
+	  margin: 0 auto;
+	  border-collapse: collapse;
+	  border-radius: 3px;
+	  overflow: hidden;
+	  background-color: #fefefe;
+	  transition: background-color 0.3s, color 0.3s;
+	  table-layout: fixed;
+	}
+
+    body.dark table {
+      background-color: #1e1e1e;
+    }
+
+    thead {
+      background-color: #26bf75;
+      color: white;
+    }
+    body.dark thead {
+      background-color: #077841;
+    }
+
+    th, td {
+	  white-space: nowrap;
+	  overflow: hidden;
+	  text-overflow: ellipsis;
+      padding: 10px 15px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+      transition: color 0.3s;
+    }
+	
+    body.dark th, body.dark td {
+      border-color: #444;
+    }
+
+    tbody tr:hover {
+      background-color: #e6f0ff;
+    }
+	
+    body.dark tbody tr:hover {
+      background-color: #2a2a2a;
+    }
+
+	tbody button {
+	  background-color: #26bf75;
+	  border-radius: 3px;
+	  color: white;
+	  border: none;
+	  margin: 0px 2px;
+	  padding: 4px 5px 2px 5px;
+	  cursor: pointer;
+	  transition: background-color 0.3s;
+	}
+
+	.action-buttons {
+	  display: flex;
+	  flex-direction: row;
+	  align-items: center;
+	  justify-content: center;
+	  gap: 1rem;
+	}
+
+    tbody button:hover {
+      background-color: #089e55;
+    }
+	
+    tbody button:last-child {
+      background-color: #e33030;
+      margin-right: 0;
+    }
+	
+    tbody button:last-child:hover {
+      background-color: #b83737;
+    }
+	
+    body.dark tbody button {
+      background-color: #077841;
+      color: white;
+    }
+	
+    body.dark tbody button:hover {
+      background-color: #089e55;
+      color: white;
+    }
+	
+	body.dark tbody button:last-child {
+      background-color: #ab1f1f;
+      margin-right: 0;
+    }
+	
+	body.dark tbody button:last-child:hover {
+      background-color: #c41212;
+    }
+
+    #modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 10;
+    }
+
+    #modal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      max-width: 600px;
+      background: white;
+      padding: 20px;
+      border-radius: 3px;
+      box-shadow: 0 0 12px rgb(0 0 0 / 0.2);
+      z-index: 9999;
+      transition: background-color 0.3s, color 0.3s;
+    }
+	
+    body.dark #modal {
+      background: #1e1e1e;
+      box-shadow: 0 0 15px rgb(255 255 255 / 0.1);
+      color: #e0e0e0;
+    }
+
+    #modal form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+	
+    #modal input[type="text"],
+    #modal textarea {
+      flex: 1 1 100%;
+      padding: 10px;
+      border: 1px solid #e3e3e3;
+      border-radius: 3px;
+      font-size: 1rem;
+      background-color: #fff;
+      color: #1c1c1c;
+      transition: border-color 0.3s, background-color 0.3s, color 0.3s;
+      resize: vertical;
+    }
+	
+    body.dark #modal input[type="text"],
+    body.dark #modal textarea {
+      background-color: #1c1c1c;
+      border-color: #555;
+      color: #e0e0e0;
+    }
+	
+    #modal input[type="text"]:focus,
+    #modal textarea:focus {
+      border-color: #26bf75;
+      outline: none;
+      background-color: #fff;
+      color: #000;
+    }
+	
+    body.dark #modal input[type="text"]:focus,
+    body.dark #modal textarea:focus {
+      background-color: #262626;
+      color: #fff;
+      border-color: #077841;
+    }
+	
+    #modal textarea {
+      min-height: 80px;
+      font-family: inherit;
+    }
+
+    #modal button {
+      display: block;
+      padding: 10px;
+      background-color: #26bf75;
+      border: none;
+      border-radius: 3px;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+	
+    #modal button:hover:not(:disabled) {
+      background-color: #089e55;
+    }
+	
+    #modal button:disabled {
+      background-color: #3beb95;
+      cursor: not-allowed;
+    }
+	
+    #modal #cancel-btn {
+      background-color: #d63636;
+    }
+	
+    #modal #cancel-btn:hover {
+      background-color: #b83737;
+    }
+	
+    body.dark #modal button {
+      color: #e0e0e0;
+    }
+	
+    body.dark #modal button:hover:not(:disabled) {
+      filter: brightness(1.2);
+    }
+
+    @media (max-width: 700px) {
+      #modal form {
+        flex-direction: column;
+      }
+      #modal button {
+        min-width: 100%;
+      }
+      table {
+        width: 100%;
+        font-size: 0.9rem;
+      }
+      textarea {
+        min-height: 100px;
+      }
+    }
+  </style>
+</head>
+<body>
+	<div class="top-bar">
+		<div class="left-section">
+			<button id="add-product-btn">Add Product</button>
+		</div>
+		<div id="search-container">
+			<input type="text" id="search-input" placeholder="Search products ..." />
+		</div>
+	</div>
+  
+	<div class="table-wrapper">
+		<table>
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th>Detail</th>
+					<th style="text-align: center;">Action</th>
+				</tr>
+			</thead>
+			<tbody id="product-list"></tbody>
+		</table>
+	</div>
+	
+	<div id="modal-backdrop"></div>
+	<div id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <h2 id="modal-title">Add Product</h2>
+		<form id="modal-form">
+			<input type="hidden" id="product-id" />
+			<input type="text" id="product-name" placeholder="Product name" required />
+			<textarea id="product-description" placeholder="Product description" required></textarea>
+			<div style="display:flex; gap:12px; margin-top:12px;">
+				<button type="submit">Save</button>
+				<button type="button" id="cancel-btn">Cancel</button>
+			</div>
+		</form>
+	</div>
+	<script>
+	  const modal = document.getElementById('modal');
+	  const modalBackdrop = document.getElementById('modal-backdrop');
+	  const addProductBtn = document.getElementById('add-product-btn');
+
+	  const form = document.getElementById('modal-form');
+	  const productList = document.getElementById('product-list');
+	  const productIdInput = document.getElementById('product-id');
+	  const productNameInput = document.getElementById('product-name');
+	  const productDescriptionInput = document.getElementById('product-description');
+	  const cancelBtn = document.getElementById('cancel-btn');
+	  const searchInput = document.getElementById('search-input');
+
+	  let allProducts = [];
+
+	  function openModal(title = "Add Product") {
+		modal.querySelector('#modal-title').textContent = title;
+		modal.style.display = 'block';
+		modalBackdrop.style.display = 'block';
+		productNameInput.focus();
+	  }
+
+	  function closeModal() {
+		modal.style.display = 'none';
+		modalBackdrop.style.display = 'none';
+		clearForm();
+	  }
+
+	  function clearForm() {
+		productIdInput.value = '';
+		productNameInput.value = '';
+		productDescriptionInput.value = '';
+	  }
+
+	  function copyText(text) {
+		const textarea = document.createElement('textarea');
+		textarea.value = text;
+		textarea.style.position = 'fixed';
+		textarea.style.opacity = '0';
+		document.body.appendChild(textarea);
+		textarea.select();
+		try {
+		  const success = document.execCommand('copy');
+		  if (success) {
+			alert('Product copied successfully!');
+		  } else {
+			alert('Failed to copy product.');
+		  }
+		} catch (err) {
+		  alert('The browser does not support the copy function.');
+		}
+		document.body.removeChild(textarea);
+	  }
+
+	  function renderProducts(products) {
+		productList.innerHTML = '';
+		if (products.length === 0) {
+		  productList.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 15px;">Products not found.</td></tr>';
+		  return;
+		}
+
+		products.forEach(p => {
+		  const tr = document.createElement('tr');
+
+		  tr.innerHTML = `
+			<td>${p.name}</td>
+			<td>${p.description}</td>
+		  `;
+
+		  const tdAction = document.createElement('td');
+		  const actionWrapper = document.createElement('div');
+		  tdAction.className = 'action-buttons';
+
+		  const btnCopy = document.createElement('button');
+		  btnCopy.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M15.24 2h-3.894c-1.764 0-3.162 0-4.255.148c-1.126.152-2.037.472-2.755 1.193c-.719.721-1.038 1.636-1.189 2.766C3 7.205 3 8.608 3 10.379v5.838c0 1.508.92 2.8 2.227 3.342c-.067-.91-.067-2.185-.067-3.247v-5.01c0-1.281 0-2.386.118-3.27c.127-.948.413-1.856 1.147-2.593s1.639-1.024 2.583-1.152c.88-.118 1.98-.118 3.257-.118h3.07c1.276 0 2.374 0 3.255.118A3.6 3.6 0 0 0 15.24 2"/><path fill="currentColor" d="M6.6 11.397c0-2.726 0-4.089.844-4.936c.843-.847 2.2-.847 4.916-.847h2.88c2.715 0 4.073 0 4.917.847S21 8.671 21 11.397v4.82c0 2.726 0 4.089-.843 4.936c-.844.847-2.202.847-4.917.847h-2.88c-2.715 0-4.073 0-4.916-.847c-.844-.847-.844-2.21-.844-4.936z"/></svg>`;
+		  btnCopy.onclick = async () => {
+			const textToCopy = `${p.name}\n\n${p.description}`;
+			if (navigator.clipboard && navigator.clipboard.writeText) {
+			  try {
+				await navigator.clipboard.writeText(textToCopy);
+				alert('Product was copied successfully!');
+			  } catch {
+				copyText(textToCopy);
+			  }
+			} else {
+			  copyText(textToCopy);
+			}
+		  };
+
+		  const btnEdit = document.createElement('button');
+		  btnEdit.innerHTML  = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M21.194 2.806a2.753 2.753 0 0 1 0 3.893l-.496.496a5 5 0 0 1-.533-.151a5.2 5.2 0 0 1-1.968-1.241a5.2 5.2 0 0 1-1.241-1.968a5 5 0 0 1-.15-.533l.495-.496a2.753 2.753 0 0 1 3.893 0M14.58 13.313c-.404.404-.606.606-.829.78a4.6 4.6 0 0 1-.848.524c-.255.121-.526.211-1.068.392l-2.858.953a.742.742 0 0 1-.939-.94l.953-2.857c.18-.542.27-.813.392-1.068q.217-.453.524-.848c.174-.223.376-.425.78-.83l4.916-4.915a6.7 6.7 0 0 0 1.533 2.36a6.7 6.7 0 0 0 2.36 1.533z"/><path fill="currentColor" d="M20.536 20.536C22 19.07 22 16.714 22 12c0-1.548 0-2.842-.052-3.934l-6.362 6.362c-.351.352-.615.616-.912.847a6 6 0 0 1-1.125.696c-.34.162-.694.28-1.166.437l-2.932.977a2.242 2.242 0 0 1-2.836-2.836l.977-2.932c.157-.472.275-.826.437-1.166q.287-.6.696-1.125c.231-.297.495-.56.847-.912l6.362-6.362C14.842 2 13.548 2 12 2C7.286 2 4.929 2 3.464 3.464C2 4.93 2 7.286 2 12s0 7.071 1.464 8.535C4.93 22 7.286 22 12 22s7.071 0 8.535-1.465"/></svg>`;
+		  btnEdit.onclick = () => editProduct(p.id);
+
+		  const btnDelete = document.createElement('button');
+		  btnDelete.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M3 6.386c0-.484.345-.877.771-.877h2.665c.529-.016.996-.399 1.176-.965l.03-.1l.115-.391c.07-.24.131-.45.217-.637c.338-.739.964-1.252 1.687-1.383c.184-.033.378-.033.6-.033h3.478c.223 0 .417 0 .6.033c.723.131 1.35.644 1.687 1.383c.086.187.147.396.218.637l.114.391l.03.1c.18.566.74.95 1.27.965h2.57c.427 0 .772.393.772.877s-.345.877-.771.877H3.77c-.425 0-.77-.393-.77-.877"/><path fill="currentColor" fill-rule="evenodd" d="M11.596 22h.808c2.783 0 4.174 0 5.08-.886c.904-.886.996-2.339 1.181-5.245l.267-4.188c.1-1.577.15-2.366-.303-2.865c-.454-.5-1.22-.5-2.753-.5H8.124c-1.533 0-2.3 0-2.753.5s-.404 1.288-.303 2.865l.267 4.188c.185 2.906.277 4.36 1.182 5.245c.905.886 2.296.886 5.079.886m-1.35-9.811c-.04-.434-.408-.75-.82-.707c-.413.043-.713.43-.672.864l.5 5.263c.04.434.408.75.82.707c.413-.043.713-.43.672-.864zm4.329-.707c.412.043.713.43.671.864l-.5 5.263c-.04.434-.409.75-.82.707c-.413-.043-.713-.43-.672-.864l.5-5.263c.04-.434.409-.75.82-.707" clip-rule="evenodd"/></svg>`;
+		  btnDelete.onclick = () => deleteProduct(p.id);
+
+		  actionWrapper.appendChild(btnCopy);
+		  actionWrapper.appendChild(btnEdit);
+		  actionWrapper.appendChild(btnDelete);
+		  tdAction.appendChild(actionWrapper);
+		  tr.appendChild(tdAction);
+
+		  productList.appendChild(tr);
+		});
+	  }
+
+	  async function loadProducts() {
+		allProducts = await window.productAPI.getProducts();
+		filterAndRender();
+	  }
+
+	  function filterAndRender() {
+		const query = searchInput.value.trim().toLowerCase();
+		if (!query) {
+		  renderProducts(allProducts);
+		  return;
+		}
+		const filtered = allProducts.filter(p =>
+		  p.name.toLowerCase().includes(query) ||
+		  p.description.toLowerCase().includes(query)
+		);
+		renderProducts(filtered);
+	  }
+
+	  async function editProduct(id) {
+		const product = allProducts.find(p => p.id === id);
+		if (!product) return;
+		productIdInput.value = product.id;
+		productNameInput.value = product.name;
+		productDescriptionInput.value = product.description;
+		openModal("Edit Product");
+	  }
+
+	  cancelBtn.onclick = closeModal;
+	  modalBackdrop.onclick = closeModal;
+
+	  async function deleteProduct(id) {
+		if (confirm('Are you sure you want to delete this product?')) {
+		  await window.productAPI.deleteProduct(id);
+		  await loadProducts();
+		  closeModal();
+		}
+	  }
+
+	  form.onsubmit = async (e) => {
+		e.preventDefault();
+		const id = parseInt(productIdInput.value);
+		const name = productNameInput.value.trim();
+		const description = productDescriptionInput.value.trim();
+
+		if (!name || !description) return alert('Name and description must be valid');
+
+		if (id) {
+		  await window.productAPI.updateProduct({ id, name, description });
+		} else {
+		  await window.productAPI.addProduct({ name, description });
+		}
+
+		closeModal();
+		await loadProducts();
+	  };
+
+	  addProductBtn.onclick = () => {
+		clearForm();
+		openModal("Add Product");
+	  };
+
+	  searchInput.addEventListener('input', filterAndRender);
+
+	  loadProducts();
+
+	  function applyTheme(theme) {
+		if (theme === 'dark') {
+		  document.body.classList.add('dark');
+		} else {
+		  document.body.classList.remove('dark');
+		}
+	  }
+
+	  window.electronAPI?.onThemeUpdated?.((event, theme) => {
+		applyTheme(theme);
+	  });
+	</script>
+</body>
+</html>

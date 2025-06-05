@@ -1,6 +1,6 @@
 {
   "name": "M-WA",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Whatsapp Web Multi Device. One Browser, Many Accounts",
   "main": "main.js",
   "scripts": {
@@ -19,7 +19,8 @@
   },
   "devDependencies": {
     "electron": "^36.3.1",
-    "electron-builder": "^26.0.12"
+    "electron-builder": "^26.0.12",
+    "electron-reload": "^2.0.0-alpha.1"
   },
   "build": {
     "appId": "com.iasdev.mwa",

@@ -16,14 +16,13 @@
   #tab-bar {
     position: fixed;
     top: 0; left: 0; right: 0;
-    height: 35px;
+    height: 34px;
     display: flex;
     align-items: center;
     padding: 0 12px;
     z-index: 1000;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    box-shadow: 0 2px 3px rgba(0,0,0,0.1);
     background-color: #ffffff;
-    border-bottom: 1px solid #444;
     user-select: none;
   }
   button#new-tab-btn {
@@ -59,6 +58,7 @@
     background-color: transparent;
   }
   .tab {
+	white-space: nowrap;
     background-color: transparent;
     border-bottom: 1px solid #c7c7c7;
     color: #1c1c1c;

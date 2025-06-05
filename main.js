@@ -1,9 +1,11 @@
+require('electron-reload')(__dirname);
 const { app, BrowserWindow, BrowserView, ipcMain, session, Menu, shell, nativeTheme } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
 
 let mainWindow;
+let productWindow = null;
 let tabCounter = 1;
 let tabs = [];
 let activeTabId = null;
@@ -13,12 +15,40 @@ const appTitle = 'M-WA';
 const userDataPath = path.join(localAppData, appTitle);
 const sessionFolder = path.join(userDataPath, 'session');
 const tabsFile = path.join(userDataPath, 'tabs.json');
+const productFilePath = path.join(userDataPath, 'products.json');
 
 if (!fs.existsSync(sessionFolder)) {
   fs.mkdirSync(sessionFolder, { recursive: true });
 }
 
+if (!fs.existsSync(userDataPath)) {
+  fs.mkdirSync(userDataPath, { recursive: true });
+}
+
+function readProducts() {
+  try {
+    if (!fs.existsSync(productFilePath)) {
+      fs.writeFileSync(productFilePath, '[]', 'utf-8');
+      return [];
+    }
+    const data = fs.readFileSync(productFilePath, 'utf-8');
+    return JSON.parse(data);
+  } catch (error) {
+    console.error('Error reading products:', error);
+    return [];
+  }
+}
+
+function writeProducts(products) {
+  try {
+    fs.writeFileSync(productFilePath, JSON.stringify(products, null, 2), 'utf-8');
+  } catch (error) {
+    console.error('Error writing products:', error);
+  }
+}
+
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
+app.commandLine.appendSwitch('enable-experimental-web-platform-features');
 
 function saveTabs() {
   const savedTabs = tabs.map(t => ({ id: t.id, partition: t.partition }));
@@ -207,6 +237,10 @@ function createNewTab(partitionName = null, reuseId = null) {
       tabs.forEach(tab => {
         injectThemeCSS(tab.view, theme);
       });
+
+      if (productWindow && !productWindow.isDestroyed()) {
+        productWindow.webContents.send('theme-updated', theme);
+      }
     }
   });
 
@@ -307,6 +341,36 @@ function clearAllData() {
   });
 }
 
+function createProductWindow() {
+  if (productWindow) {
+    productWindow.focus();
+    return;
+  }
+
+  productWindow = new BrowserWindow({
+    width: 800,
+    height: 600,
+    title: 'Daftar Produk',
+    autoHideMenuBar: true,
+    menuBarVisible: false,
+    icon: path.join(__dirname, 'assets', 'icon.png'),
+    webPreferences: {
+      contextIsolation: true,
+      preload: path.join(__dirname, 'src', 'preload.js')
+    }
+  });
+
+  productWindow.loadFile(path.join(__dirname, 'src', 'product.html'));
+
+  productWindow.webContents.on('did-finish-load', () => {
+    productWindow.webContents.send('theme-updated', nativeTheme.shouldUseDarkColors ? 'dark' : 'light');
+  });
+
+  productWindow.on('closed', () => {
+    productWindow = null;
+  });
+}
+
 function createAppMenu() {
   const menu = Menu.buildFromTemplate([
     {
@@ -316,27 +380,26 @@ function createAppMenu() {
           label: 'Clear Data',
           click: () => clearAllData()
         },
+		{
+		  label: 'Theme',
+		  click: () => {
+			const isDark = nativeTheme.shouldUseDarkColors;
+			nativeTheme.themeSource = isDark ? 'light' : 'dark';
+			mainWindow?.webContents.send('theme-updated', nativeTheme.themeSource);
+		  }
+		},
+		{
+		  label: 'Github',
+		  click: async () => {
+		    await shell.openExternal('https://github.com/fitri-hy/MWA-Electron');
+		  }
+		},
         { role: 'quit' }
       ]
     },
     {
-      label: 'Theme',
-      click: () => {
-        const isDark = nativeTheme.shouldUseDarkColors;
-        nativeTheme.themeSource = isDark ? 'light' : 'dark';
-        mainWindow?.webContents.send('theme-updated', nativeTheme.themeSource);
-      }
-    },
-    {
-      label: 'Github',
-      submenu: [
-        {
-          label: 'Fitri HY',
-          click: async () => {
-            await shell.openExternal('https://github.com/fitri-hy/MWA-Electron');
-          }
-        }
-      ]
+      label: 'Product',
+      click: () => createProductWindow()
     }
   ]);
   Menu.setApplicationMenu(menu);
@@ -366,6 +429,36 @@ app.whenReady().then(async () => {
   ipcMain.handle('switch-tab', (event, id) => switchTab(id));
   ipcMain.handle('close-tab', (event, id) => closeTab(id));
   ipcMain.handle('clear-data', () => clearAllData());
+
+ipcMain.handle('get-products', () => {
+  return readProducts();
+});
+
+ipcMain.handle('add-product', (_, product) => {
+  const products = readProducts();
+  const maxId = products.length > 0 ? Math.max(...products.map(p => p.id)) : 0;
+  const newId = maxId + 1;
+
+  const newProduct = { id: newId, ...product };
+  products.push(newProduct);
+  writeProducts(products);
+  return products;
+});
+
+ipcMain.handle('update-product', (_, editedProduct) => {
+  let products = readProducts();
+  products = products.map(p => (p.id === editedProduct.id ? editedProduct : p));
+  writeProducts(products);
+  return products;
+});
+
+ipcMain.handle('delete-product', (_, productId) => {
+  let products = readProducts();
+  products = products.filter(p => p.id !== productId);
+  writeProducts(products);
+  return products;
+});
+
 
   const savedData = loadTabs();
   if (savedData.tabs.length > 0) {
