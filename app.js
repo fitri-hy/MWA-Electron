@@ -36,11 +36,11 @@ app.use((req, res, next) => {
 let darkMode = false;
 
 app.get('/', (req, res) => {
-  res.render('index', { darkMode, title: 'Home | Electron' });
+  res.render('index', { darkMode, title: 'M-WA' });
 });
 
 app.get('/bot', (req, res) => {
-  res.render('bot', { darkMode, title: 'Bot | Electron' });
+  res.render('bot', { darkMode, title: 'Bot | M-WA' });
 });
 
 app.use('/auto-reply', (req, res, next) => {
@@ -71,7 +71,7 @@ app.get('/auto-reply', (req, res) => {
 
     res.render('auto-reply', {
       darkMode: req.darkMode || false,
-      title: 'Auto Reply | Electron',
+      title: 'Auto Reply | M-WA',
       autoReplies: filteredReplies
     });
   });

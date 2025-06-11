@@ -6,6 +6,7 @@ module.exports = function setupAutoReply(sock) {
   const homeDir = os.homedir();
   const autoRepliesPath = path.join(homeDir, '.config', 'M-WA', 'auto-reply', 'autoReply.json');
   let autoReplies = [];
+  
   const defaultReplies = [
     {
       id: 1,
