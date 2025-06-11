@@ -11,6 +11,10 @@ let tabsFilePath;
 const tabsDataRef = { value: [] };
 
 app.whenReady().then(() => {
+  if (process.platform === 'win32') {
+    app.setAppUserModelId('com.fhylabs.mwa');
+  }
+  
   startExpressServer();
   
   tabsFilePath = path.join(app.getPath('appData'), 'M-WA', 'tabs.json');
