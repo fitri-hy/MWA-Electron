@@ -7,7 +7,7 @@ const session = require('express-session');
 const flash = require('connect-flash');
 const http = require('http');
 const socketIO = require('socket.io');
-const { ensureAutoRepliesFile, readAutoReplies, saveAutoReplies } = require('./utils/autoReplyHelper');
+const { ensureAutoRepliesFile, readAutoReplies, saveAutoReplies, ensureFirstMessageFile, readFirstMessage, saveFirstMessage, clearFirstTimeUsers } = require('./utils/autoReplyHelper');
 const initBotSocket = require('./utils/bot/botSocket');
 
 const app = express();
@@ -49,7 +49,13 @@ app.use('/auto-reply', (req, res, next) => {
       console.error('Failed to verify autoReply.json file:', err);
       return res.status(500).send('Error server');
     }
-    next();
+    ensureFirstMessageFile((err2) => {
+      if (err2) {
+        console.error('Failed to verify firstMessage.json file:', err2);
+        return res.status(500).send('Error server');
+      }
+      next();
+    });
   });
 });
 
@@ -62,17 +68,25 @@ app.get('/auto-reply', (req, res) => {
       return res.status(500).send('Failed to read auto-reply data');
     }
 
-    const filteredReplies = keyword
-      ? autoReplies.filter(reply =>
-          reply.value.toLowerCase().includes(keyword) ||
-          reply.response.toLowerCase().includes(keyword)
-        )
-      : autoReplies;
+    readFirstMessage((err2, firstMessage) => {
+      if (err2) {
+        console.error('Failed to read firstMessage.json file:', err2);
+        return res.status(500).send('Failed to read first-time message');
+      }
 
-    res.render('auto-reply', {
-      darkMode: req.darkMode || false,
-      title: 'Auto Reply | M-WA',
-      autoReplies: filteredReplies
+      const filteredReplies = keyword
+        ? autoReplies.filter(reply =>
+            reply.value.toLowerCase().includes(keyword) ||
+            reply.response.toLowerCase().includes(keyword)
+          )
+        : autoReplies;
+
+      res.render('auto-reply', {
+        darkMode: req.darkMode || false,
+        title: 'Auto Reply | M-WA',
+        autoReplies: filteredReplies,
+        firstMessage: firstMessage
+      });
     });
   });
 });
@@ -141,7 +155,6 @@ app.post('/auto-reply/update', (req, res) => {
   });
 });
 
-
 app.post('/auto-reply/delete/:id', (req, res) => {
   const id = parseInt(req.params.id);
   if (!id) {
@@ -173,6 +186,39 @@ app.post('/auto-reply/delete/:id', (req, res) => {
   });
 });
 
+app.post('/auto-reply/first-message', (req, res) => {
+  const { message, enabled } = req.body;
+
+  if (!message || message.trim() === '') {
+    req.flash('error_msg', 'Message cannot be empty.');
+    return res.redirect('/auto-reply');
+  }
+
+  const newFirstMessage = {
+    message: message.trim(),
+    enabled: enabled === 'true'
+  };
+
+  saveFirstMessage(newFirstMessage, (err) => {
+    if (err) {
+      req.flash('error_msg', 'Failed to save first message.');
+      return res.redirect('/auto-reply');
+    }
+    req.flash('success_msg', 'First message updated successfully.');
+    res.redirect('/auto-reply');
+  });
+});
+
+app.post('/auto-reply/clear-first-users', (req, res) => {
+  clearFirstTimeUsers((err) => {
+    if (err) {
+      req.flash('error_msg', 'Failed to delete first user data.');
+    } else {
+      req.flash('success_msg', 'The first user data was successfully cleared.');
+    }
+    res.redirect('/auto-reply');
+  });
+});
 
 initBotSocket(io);
 

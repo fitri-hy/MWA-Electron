@@ -74,3 +74,37 @@ window.addEventListener('DOMContentLoaded', () => {
 		}, 3000);
 	}
 });
+
+// Edit Greeting Modal
+const editBtn = document.getElementById('editFirstMessage');
+const modal = document.getElementById('editFirstMessageModal');
+const form = document.getElementById('editFirstMessageForm');
+const cancelBtn = document.getElementById('cancelEdit');
+const input = document.getElementById('firstMessageInput');
+
+editBtn.addEventListener('click', () => {
+    modal.classList.remove('hidden');
+});
+
+cancelBtn.addEventListener('click', () => {
+    modal.classList.add('hidden');
+});
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const message = input.value.trim();
+  const enabled = form.querySelector('input[name="enabled"]:checked').value;
+
+  const res = await fetch('/auto-reply/first-message', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message, enabled })
+  });
+
+  if (res.ok) {
+    location.reload();
+  } else {
+    alert('Gagal menyimpan pesan.');
+  }
+});
