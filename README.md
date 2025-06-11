@@ -17,7 +17,7 @@
 
 ## 🖥️ Screenshot
 
-<img src="./sss.jpg">
+<img src="./public/assets/images/ss.jpg">
 
 ---
 

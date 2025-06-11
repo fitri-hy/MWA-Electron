@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" class="<%= darkMode ? 'dark' : '' %>">
+<head>
+  <%- include('partials/head') %>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body class="bg-gray-50 dark:bg-neutral-800 text-gray-700 dark:text-gray-200 text-sm">
+	<main class="flex gap-4 p-2">
+		<div class="w-full">
+			<form id="addSessionForm" class="flex items-center w-full max-w-sm mb-2">
+				<input type="text" id="newSessionId" placeholder="Enter session ID" required class="px-4 py-2 rounded-l bg-white dark:bg-neutral-900 border-l border-t border-b border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-green-400 dark:focus:border-green-800" />
+				<button type="submit" class="px-2 py-2 flex items-center justify-center rounded-r border-r border-t border-b border-gray-200 dark:border-neutral-700 text-white bg-green-500 hover:bg-green-600 dark:bg-green-700 dark:hover:bg-green-600 text-white hover:scale-105 hover:duration-300 transition-all">
+					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12c0-4.714 0-7.071 1.464-8.536C4.93 2 7.286 2 12 2s7.071 0 8.535 1.464C22 4.93 22 7.286 22 12s0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12Z"/><path stroke-linecap="round" d="M15 12h-3m0 0H9m3 0V9m0 3v3"/></g></svg>
+				</button>
+			</form>
+			<table class="w-full text-left bg-white dark:bg-neutral-900">
+				<thead>
+					<tr class="bg-green-500 dark:bg-green-700 text-white">
+						<th class="px-4 py-2">Session ID</th>
+						<th class="px-4 py-2">Status</th>
+						<th class="px-4 py-2">Actions</th>
+					</tr>
+				</thead>
+				<tbody id="sessionsBody"></tbody>
+			</table>
+		</div>
+		<div class="flex-none flex w-52 flex flex-col gap-4">
+			<div id="qrList" class="flex flex-col items-center justify-center border border-dashed border-gray-400 min-h-[180px] w-full"></div>
+		</div>
+	</main>
+
+  <script src="/assets/js/electronAPIBot.js"></script>
+</body>
+</html>
