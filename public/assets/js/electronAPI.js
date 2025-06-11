@@ -173,3 +173,54 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+// Internet Checks
+const mwaModal = document.getElementById('mwa-connection-modal');
+const mwaMessage = document.getElementById('mwa-connection-message');
+let mwaTimeoutId = null;
+
+function mwaShowModal(text, bgColor, autoHide = false) {
+  mwaMessage.textContent = text;
+  mwaModal.classList.remove('hidden');
+  mwaModal.classList.remove('bg-red-600', 'bg-green-600');
+
+  if (bgColor === 'red') {
+    mwaModal.classList.add('bg-red-600');
+  } else if (bgColor === 'green') {
+    mwaModal.classList.add('bg-green-600');
+  }
+
+  if (mwaTimeoutId) {
+    clearTimeout(mwaTimeoutId);
+    mwaTimeoutId = null;
+  }
+
+  if (autoHide) {
+    mwaTimeoutId = setTimeout(() => {
+      mwaModal.classList.add('hidden');
+      if (bgColor === 'green') {
+        location.reload();
+      }
+    }, 3000);
+  }
+}
+
+function mwaHideModal() {
+  mwaModal.classList.add('hidden');
+  if (mwaTimeoutId) {
+    clearTimeout(mwaTimeoutId);
+    mwaTimeoutId = null;
+  }
+}
+
+window.electronAPI.onOnlineStatusChange((isOnline) => {
+  if (isOnline) {
+    mwaShowModal('You are reconnected !!', 'green', true);
+  } else {
+    mwaShowModal('Internet is not connected. Please check your connection.', 'red', false);
+  }
+});
+
+if (!navigator.onLine) {
+  mwaShowModal('Internet is not connected. Please check your connection.', 'red', false);
+}
