@@ -3,6 +3,7 @@ const { dialog, nativeTheme, app, screen, Menu, BrowserWindow, shell } = require
 const { clearAllData } = require('./tab');
 const { createBotWindow } = require('./botWindow');
 const { createAutoReplyWindow } = require('./autoReplyWindow');
+const { createSettingWindow } = require('./settingWindow');
 
 async function checkForUpdates(win) {
   const releasesUrl = 'https://api.github.com/repos/fitri-hy/MWA-Electron/releases/latest';
@@ -92,6 +93,12 @@ function menuApp(win, tabsFilePath, tabsData) {
               message: 'M-WA is an Electron application that allows you to manage multiple WhatsApp accounts at once in one place. With multi-account bot features and auto-response management, M-WA helps automate WhatsApp conversations easily and efficiently.',
             }),
         },
+		{
+		  label: 'Setting', accelerator: 'CmdOrCtrl+S',
+		  click: () => {
+			createSettingWindow();
+		  },
+		},
         { label: 'Exit', accelerator: 'CmdOrCtrl+Q', click: () => app.quit() },
       ],
     },

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" class="<%= darkMode ? 'dark' : '' %>">
+<head>
+  <%- include('partials/head') %>
+</head>
+<body class="bg-gray-50 dark:bg-neutral-800 text-gray-700 dark:text-gray-200 text-sm">
+	<main class="p-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+		<div class="flex flex-col gap-4 bg-white dark:bg-neutral-900 p-4 border border-gray-100 dark:border-neutral-700 rounded">
+			<div class="w-full flex items-center justify-between gap-4 border-b border-gray-200 dark:border-neutral-700 pb-4">
+				<h2 class="text-xl font-semibold">
+					Lockscreen
+				</h2>
+				<form id="toggleForm" action="/setting/toggle" method="POST">
+					<label class="relative inline-flex items-center cursor-pointer">
+						<input onchange="document.getElementById('toggleForm').submit()" type="checkbox" name="enabled" class="sr-only peer" <%= enabled ? 'checked' : '' %>>
+						<div class="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-green-500 transition-colors duration-300"></div>
+						<div class="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-300 transform peer-checked:translate-x-full"></div>
+					</label>
+				</form>
+			</div>
+			<form action="/setting/password" method="POST" class="flex flex-col gap-4">
+				<div class="w-full flex gap-4">
+					<div class="w-full flex flex-col gap-1">
+						<label>
+							New Password
+						</label>
+						<div class="relative">
+							<input id="newPassword" name="password" type="password" placeholder="***********" class="w-full px-4 py-2 rounded bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-green-400 dark:focus:border-green-800" />
+							<button type="button" onclick="togglePassword('newPassword')" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-500 dark:text-gray-300">
+								<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3.275 15.296C2.425 14.192 2 13.639 2 12c0-1.64.425-2.191 1.275-3.296C4.972 6.5 7.818 4 12 4s7.028 2.5 8.725 4.704C21.575 9.81 22 10.361 22 12c0 1.64-.425 2.191-1.275 3.296C19.028 17.5 16.182 20 12 20s-7.028-2.5-8.725-4.704Z"/><path d="M15 12a3 3 0 1 1-6 0a3 3 0 0 1 6 0Z"/></g></svg>
+							</button>
+						</div>
+					</div>
+					<div class="w-full flex flex-col gap-1">
+						<label>
+							Confirm Password
+						</label>
+						<div class="relative">
+							<input id="confirmPassword" type="password" placeholder="***********" class="w-full px-4 py-2 rounded bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-green-400 dark:focus:border-green-800" />
+							<button type="button" onclick="togglePassword('confirmPassword')" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-500 dark:text-gray-300">
+								<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3.275 15.296C2.425 14.192 2 13.639 2 12c0-1.64.425-2.191 1.275-3.296C4.972 6.5 7.818 4 12 4s7.028 2.5 8.725 4.704C21.575 9.81 22 10.361 22 12c0 1.64-.425 2.191-1.275 3.296C19.028 17.5 16.182 20 12 20s-7.028-2.5-8.725-4.704Z"/><path d="M15 12a3 3 0 1 1-6 0a3 3 0 0 1 6 0Z"/></g></svg>
+							</button>
+						</div>
+					</div>
+				</div>
+				<div class="flex justify-start">
+					<button type="submit" class="px-4 py-2 rounded bg-green-500 hover:bg-green-600 dark:bg-green-700 dark:hover:bg-green-600 text-white hover:scale-105 hover:duration-300 transition-all">
+						Change Password
+					</button>
+				</div>
+			<form>
+		</div>
+
+	</main>
+	<% if (success_msg && success_msg.length > 0) { %>
+	  <div id="flash-message" class="fixed bottom-2 right-2 text-xs px-2 py-1 rounded bg-green-500 dark:bg-green-700 text-white font-semibold shadow-lg z-50">
+		<%= success_msg[0] %>
+	  </div>
+	<% } %>
+
+	<% if (error_msg && error_msg.length > 0) { %>
+	  <div id="flash-message" class="fixed bottom-2 right-2 text-xs px-2 py-1 rounded bg-rose-500 dark:bg-rose-700 text-white font-semibold shadow-lg z-50">
+		<%= error_msg[0] %>
+	  </div>
+	<% } %>
+
+  <script src="/assets/js/electronAPISetting.js"></script>
+
+</body>
+</html>

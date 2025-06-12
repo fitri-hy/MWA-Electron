@@ -8,6 +8,7 @@ const flash = require('connect-flash');
 const http = require('http');
 const socketIO = require('socket.io');
 const { ensureAutoRepliesFile, readAutoReplies, saveAutoReplies, ensureFirstMessageFile, readFirstMessage, saveFirstMessage, clearFirstTimeUsers } = require('./utils/autoReplyHelper');
+const { lockscreenMiddleware, lockscreenGet, lockscreenPost, settingData } = require('./utils/lockscreen');
 const initBotSocket = require('./utils/bot/botSocket');
 
 const app = express();
@@ -34,6 +35,16 @@ app.use((req, res, next) => {
 });
 
 let darkMode = false;
+
+app.use(lockscreenMiddleware);
+
+app.get('/lockscreen', (req, res) => {
+  lockscreenGet(req, res, darkMode);
+});
+
+app.post('/lockscreen', (req, res) => {
+  lockscreenPost(req, res, darkMode);
+});
 
 app.get('/', (req, res) => {
   res.render('index', { darkMode, title: 'M-WA' });
@@ -217,6 +228,102 @@ app.post('/auto-reply/clear-first-users', (req, res) => {
       req.flash('success_msg', 'The first user data was successfully cleared.');
     }
     res.redirect('/auto-reply');
+  });
+});
+
+app.get('/setting', (req, res) => {
+  const homeDir = os.homedir();
+  const configDir = path.join(homeDir, '.config', 'M-WA', 'setting');
+  const settingPath = path.join(configDir, 'setting.json');
+
+  let settings = { password: '', enabled: false };
+
+  try {
+    if (!fs.existsSync(configDir)) {
+      fs.mkdirSync(configDir, { recursive: true });
+    }
+    if (fs.existsSync(settingPath)) {
+      const fileData = fs.readFileSync(settingPath, 'utf8');
+      settings = JSON.parse(fileData);
+    } else {
+      fs.writeFileSync(settingPath, JSON.stringify(settings, null, 2));
+    }
+  } catch (err) {
+    console.error('Error reading/writing setting file:', err);
+  }
+
+  res.render('setting', {
+    darkMode: req.darkMode || false,
+    title: 'Setting | M-WA',
+    enabled: settings.enabled,
+    success_msg: req.flash('success_msg'),
+    error_msg: req.flash('error_msg'),
+  });
+});
+
+app.post('/setting/password', (req, res) => {
+  const homeDir = os.homedir();
+  const configDir = path.join(homeDir, '.config', 'M-WA', 'setting');
+  const settingPath = path.join(configDir, 'setting.json');
+
+  if (!fs.existsSync(configDir)) {
+    fs.mkdirSync(configDir, { recursive: true });
+  }
+
+  let currentSetting = { enabled: false, password: '' };
+  if (fs.existsSync(settingPath)) {
+    try {
+      const raw = fs.readFileSync(settingPath, 'utf-8');
+      currentSetting = JSON.parse(raw);
+    } catch (err) {
+      console.error('Failed to read existing settings:', err);
+    }
+  }
+
+  currentSetting.password = req.body.password;
+
+  fs.writeFile(settingPath, JSON.stringify(currentSetting, null, 2), (err) => {
+    if (err) {
+      console.error('Failed to write settings:', err);
+      req.flash('error_msg', 'Failed to save settings');
+      return res.redirect('/setting');
+    }
+    req.flash('success_msg', 'Settings updated successfully');
+    res.redirect('/setting');
+  });
+});
+
+app.post('/setting/toggle', (req, res) => {
+  const homeDir = os.homedir();
+  const configDir = path.join(homeDir, '.config', 'M-WA', 'setting');
+  const settingPath = path.join(configDir, 'setting.json');
+
+  if (!fs.existsSync(configDir)) {
+    fs.mkdirSync(configDir, { recursive: true });
+  }
+
+  let settings = { enabled: false };
+
+  try {
+    if (fs.existsSync(settingPath)) {
+      const fileData = fs.readFileSync(settingPath, 'utf8');
+      settings = JSON.parse(fileData);
+    }
+  } catch (err) {
+    console.error('Failed to read settings:', err);
+  }
+
+  const enabled = req.body.enabled === 'on' ? true : false;
+  settings.enabled = enabled;
+
+  fs.writeFile(settingPath, JSON.stringify(settings, null, 2), (err) => {
+    if (err) {
+      console.error('Failed to write settings:', err);
+      req.flash('error_msg', 'Gagal memperbarui toggle');
+      return res.redirect('/setting');
+    }
+    req.flash('success_msg', 'Toggle berhasil diperbarui');
+    res.redirect('/setting');
   });
 });
 

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" class="<%= darkMode ? 'dark' : '' %>">
+<head>
+  <%- include('partials/head') %>
+</head>
+<body class="h-screen w-full flex flex-col justify-center items-center bg-gray-50 dark:bg-neutral-800 text-gray-700 dark:text-gray-200 text-sm">
+	<main class="z-10 relative w-full max-w-xs bg-white dark:bg-neutral-900 py-9 px-6 rounded border border-gray-200/60 dark:border-neutral-700/60">
+		<% if (error) { %>
+			<div class="error rounded-t top-0 left-0 text-white bg-rose-500 text-xs z-10 absolute w-full px-2 py-1 text-center"><%= error %></div>
+		<% } %>
+		<form method="POST" action="/lockscreen" class="flex flex-col gap-4">
+			<div class="mb-4 flex gap-1 items-center justify-center">
+				<img class="h-10 w-10 object-cover" src="/assets/images/logo.png" alt="logo">
+				<h2 class="text-center text-3xl font-bold">M-WA</h2>
+			</div>
+			<div class="flex">
+			<input type="password" name="password" placeholder="Enter screen password" autofocus class="w-full px-4 py-2 rounded-l bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-green-400 dark:focus:border-green-800" />
+			<div class="flex gap-1 items-center justify-center">
+				<button type="submit" class="p-2 rounded-r bg-green-500 hover:bg-green-600 dark:bg-green-700 dark:hover:bg-green-600 text-white hover:scale-105 hover:duration-300 transition-all">
+					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M10.845 8.095a.75.75 0 0 0 0 1.06l1.72 1.72h-8.19a.75.75 0 0 0 0 1.5h8.19l-1.72 1.72a.75.75 0 1 0 1.06 1.06l3-3a.75.75 0 0 0 0-1.06l-3-3a.75.75 0 0 0-1.06 0" clip-rule="evenodd"/><path fill="currentColor" d="M12.375 5.877c0 .448.274.84.591 1.157l3 3a2.25 2.25 0 0 1 0 3.182l-3 3c-.317.317-.591.709-.591 1.157v2.252a8 8 0 1 0 0-16z"/></svg>
+				</button>
+			</div>
+			</div>
+		</form>
+	</main>
+	<script>
+	window.addEventListener('DOMContentLoaded', () => {
+	  const darkModeOn = localStorage.getItem('darkMode') === 'true';
+
+	  if (darkModeOn) {
+		document.documentElement.classList.add('dark');
+		const modeText = document.getElementById('mode-text');
+		if (modeText) modeText.innerText = 'Dark Mode ON';
+	  } else {
+		document.documentElement.classList.remove('dark');
+		const modeText = document.getElementById('mode-text');
+		if (modeText) modeText.innerText = 'Dark Mode OFF';
+	  }
+
+	  window.electronAPI.sendDarkModePreference(darkModeOn);
+	});
+
+	window.electronAPI.onToggleDarkMode((event, darkModeOn) => {
+	  if (darkModeOn) {
+		document.documentElement.classList.add('dark');
+		const modeText = document.getElementById('mode-text');
+		if (modeText) modeText.innerText = 'Dark Mode ON';
+	  } else {
+		document.documentElement.classList.remove('dark');
+		const modeText = document.getElementById('mode-text');
+		if (modeText) modeText.innerText = 'Dark Mode OFF';
+	  }
+	  localStorage.setItem('darkMode', darkModeOn);
+	});
+	</script>
+</body>
+</html>
