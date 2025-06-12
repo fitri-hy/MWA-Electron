@@ -6,42 +6,49 @@ const { createAutoReplyWindow } = require('./autoReplyWindow');
 const { createSettingWindow } = require('./settingWindow');
 const { createAIWindow } = require('./aiWindow');
 
-async function checkForUpdates(win) {
+async function checkForUpdates(win, silent = false) {
   const releasesUrl = 'https://api.github.com/repos/fitri-hy/MWA-Electron/releases/latest';
-  
+
   try {
     const response = await axios.get(releasesUrl);
     const latest = response.data;
-    const latestVersion = latest.tag_name;
+    const latestVersion = latest.tag_name?.replace(/^v/, '');
     const releaseNotes = latest.body || 'No details provided.';
     const currentVersion = app.getVersion();
 
-    if (latestVersion !== currentVersion) {
+    if (latestVersion && latestVersion !== currentVersion) {
       const downloadUrl = latest.assets.length > 0 ? latest.assets[0].browser_download_url : null;
 
       const result = await dialog.showMessageBox(win, {
         type: 'info',
-        buttons: ['Download', 'Cancel'],
+        buttons: ['Update Now', 'Later'],
         defaultId: 0,
         cancelId: 1,
-        title: 'Update Available',
-        message: `Latest version available: ${latestVersion}\nCurrent version: ${currentVersion}\n\nChangelog:\n${releaseNotes}\n\nDo you want to download the update?`,
+        title: 'New Update Available',
+        message: `M-WA has a new version: v${latestVersion}`,
+        detail: `You're using version v${currentVersion}.\n\nChangelog:\n${releaseNotes}`,
+        noLink: true,
       });
 
       if (result.response === 0 && downloadUrl) {
         shell.openExternal(downloadUrl);
       }
-    } else {
+    } else if (!silent) {
       dialog.showMessageBox(win, {
         type: 'info',
-        message: 'The application is already using the latest version.',
+        title: 'No Updates',
+        message: 'You are already using the latest version.',
+        buttons: ['OK'],
       });
     }
   } catch (err) {
-    dialog.showMessageBox(win, {
-      type: 'error',
-      message: `Failed to check for updates.`,
-    });
+    if (!silent) {
+      dialog.showMessageBox(win, {
+        type: 'error',
+        title: 'Update Check Failed',
+        message: 'Failed to check for updates. Please try again later.',
+      });
+    }
   }
 }
 
@@ -137,5 +144,5 @@ function menuApp(win, tabsFilePath, tabsData) {
 }
 
 module.exports = {
-  menuApp,
+  menuApp, checkForUpdates
 };

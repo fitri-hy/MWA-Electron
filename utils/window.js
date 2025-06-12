@@ -1,7 +1,7 @@
 require('dotenv').config();
 const { BrowserWindow, screen, Menu } = require('electron');
 const path = require('path');
-const { menuApp } = require('./menu');
+const { menuApp, checkForUpdates } = require('./menu');
 
 const port = process.env.PORT || 3000;
 const iconPath = path.join(__dirname, '..', 'public', 'assets', 'images', 'logo.png');
@@ -27,7 +27,10 @@ function createWindow(tabsFilePath, tabsData) {
   });
 
   win.loadURL(`http://localhost:${port}`);
-  win.once('ready-to-show', () => win.show());
+  win.once('ready-to-show', () => {
+    win.show();
+    checkForUpdates(win, true);
+  });
 
   const menu = Menu.buildFromTemplate(menuApp(win, tabsFilePath, tabsData));
   Menu.setApplicationMenu(menu);
