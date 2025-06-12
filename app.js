@@ -10,6 +10,7 @@ const socketIO = require('socket.io');
 const { ensureAutoRepliesFile, readAutoReplies, saveAutoReplies, ensureFirstMessageFile, readFirstMessage, saveFirstMessage, clearFirstTimeUsers } = require('./utils/autoReplyHelper');
 const { lockscreenMiddleware, lockscreenGet, lockscreenPost, settingData } = require('./utils/lockscreen');
 const { generateText } = require('./utils/gemini');
+const { getNotes, addNote, editNote, deleteNote } = require('./utils/notes');
 const initBotSocket = require('./utils/bot/botSocket');
 
 const app = express();
@@ -383,6 +384,65 @@ app.post('/setting/gemini', (req, res) => {
     req.flash('success_msg', 'Settings updated successfully');
     res.redirect('/setting');
   });
+});
+
+app.get('/notes', (req, res) => {
+  const q = req.query.q?.toLowerCase() || '';
+  let allNotes = getNotes();
+
+  if (q) {
+    allNotes = allNotes.filter(note => 
+      note.title.toLowerCase().includes(q) || 
+      note.note.toLowerCase().includes(q)
+    );
+  }
+
+  res.render('notes', {
+    darkMode,
+    title: 'Notes | M-WA',
+    notes: allNotes,
+    query: q,
+  });
+});
+
+
+app.post('/notes/add', (req, res) => {
+  const { title, note } = req.body;
+  if (!title || !note) {
+    req.flash('error_msg', 'Title and note are required');
+    return res.redirect('/notes');
+  }
+  addNote(title, note);
+  req.flash('success_msg', 'Note added successfully');
+  res.redirect('/notes');
+});
+
+app.post('/notes/edit', (req, res) => {
+  const { id, title, note } = req.body;
+  if (!id || !title || !note) {
+    req.flash('error_msg', 'ID, title, and note are required');
+    return res.redirect('/notes');
+  }
+  const updated = editNote(id, title, note);
+  if (!updated) {
+    req.flash('error_msg', 'Note not found');
+    return res.redirect('/notes');
+  }
+  req.flash('success_msg', 'Note updated successfully');
+  res.redirect('/notes');
+});
+
+app.post('/notes/delete/:id', (req, res) => {
+  const { id } = req.params;
+  const success = deleteNote(id);
+
+  if (success) {
+    req.flash('success_msg', 'Note deleted successfully.');
+  } else {
+    req.flash('error_msg', 'Note not found.');
+  }
+
+  res.redirect('/notes');
 });
 
 initBotSocket(io);

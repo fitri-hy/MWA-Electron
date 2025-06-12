@@ -98,12 +98,25 @@ function renderTabs() {
         alert('There must be at least 1 tab');
         return;
       }
-      tabs = tabs.filter(t => t.id !== tab.id);
-      if (activeTabId === tab.id) activeTabId = tabs[0].id;
+
+      const closingTabId = tab.id;
+
+      tabs = tabs.filter(t => t.id !== closingTabId);
+
+      const webviewToRemove = document.getElementById('wv-' + closingTabId);
+      if (webviewToRemove) {
+        webviewToRemove.remove();
+      }
+
+      if (activeTabId === closingTabId) {
+        activeTabId = tabs[0].id;
+      }
+
       renderTabs();
       updateWebviewVisibility();
       saveTabs();
     });
+
   });
 }
 

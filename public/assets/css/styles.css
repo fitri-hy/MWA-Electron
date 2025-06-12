@@ -1353,6 +1353,12 @@ video {
 .w-full {
   width: 100%;
 }
+.min-w-\[300px\] {
+  min-width: 300px;
+}
+.max-w-\[500px\] {
+  max-width: 500px;
+}
 .max-w-\[80\%\] {
   max-width: 80%;
 }
@@ -1655,6 +1661,10 @@ video {
 .text-gray-700 {
   --tw-text-opacity: 1;
   color: rgb(55 65 81 / var(--tw-text-opacity, 1));
+}
+.text-green-500 {
+  --tw-text-opacity: 1;
+  color: rgb(34 197 94 / var(--tw-text-opacity, 1));
 }
 .text-rose-400 {
   --tw-text-opacity: 1;
