@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en" class="<%= darkMode ? 'dark' : '' %>">
+<head>
+  <%- include('partials/head') %>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/androidstudio.min.css" integrity="sha512-1XN5rnQ4rhaGEfX3nlDJ4Hb7kKNMAi0+DWQ/cNf54tuuTGSs0Wyw6mbgzVxLUCQ+vxSpmzr4j87ROim2ChrYnA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    pre code {
+      background-color: transparent !important;
+    }
+  </style>
+</head>
+<body class="min-h-screen h-full w-full bg-white dark:bg-neutral-800 text-gray-700 dark:text-gray-200">
+
+  <div id="chatContainer" class="prose max-w-none h-[calc(100vh-64px)] w-full flex flex-col overflow-y-auto p-4 space-y-2">
+    <% chats.forEach(chat => { %>
+      <% if(chat.from === 'ai') { %>
+        <div class="flex flex-col justify-start">
+          <label>MWA-AI</label>
+          <div class="flex">
+            <div class="bg-gray-100 dark:bg-neutral-900 rounded-xl rounded-tl-none max-w-[80%] px-4 py-3">
+              <%= chat.text %>
+            </div>
+          </div>
+        </div>
+      <% } else { %>
+        <div class="flex flex-col justify-end">
+          <label class="text-right">You</label>
+          <div class="flex justify-end">
+            <div class="bg-green-400 dark:bg-green-700 text-white rounded-xl rounded-tr-none max-w-[80%] px-4 py-3">
+              <%= chat.text %>
+            </div>
+          </div>
+        </div>
+      <% } %>
+    <% }) %>
+  </div>
+
+  <div class="h-16 w-full flex items-center justify-center gap-2 px-2">
+    <input id="chatInput" placeholder="Enter question ..." class="w-full px-4 py-3 rounded bg-white dark:bg-neutral-900 border border gray-200/60 dark:border-gray-700/60 focus:outline-none focus:border-green-500 dark:focus:border-green-700" autocomplete="off" />
+    <button id="sendBtn" class="p-3 rounded bg-green-500 dark:bg-green-700 hover:bg-green-600 dark:hover:bg-green-600 text-white hover:scale-105 hover:duration-300 transition-all" title="Send" aria-label="Send message">
+      <svg id="sendIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+        <path fill="currentColor" d="M14.143 15.962a.5.5 0 0 1-.244.68l-9.402 4.193c-1.495.667-3.047-.814-2.306-2.202l3.152-5.904c.245-.459.245-1 0-1.458L2.191 5.367c-.74-1.388.81-2.87 2.306-2.202l3.525 1.572a2 2 0 0 1 .974.932z"/>
+        <path fill="currentColor" d="M15.533 15.39a.5.5 0 0 0 .651.233l4.823-2.15c1.323-.59 1.323-2.355 0-2.945L12.109 6.56a.5.5 0 0 0-.651.68z" opacity="0.5"/>
+      </svg>
+    </button>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js" integrity="sha512-EBLzUL8XLl+va/zAsmXwS7Z2B1F9HUHkZwyS/VKwh3S7T/U0nF4BaU29EP/ZSf6zgiIxYAnKLu6bJ8dqpmX5uw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="/assets/js/electronAPIAI.js"></script>
+  <script>
+	const chatContainer = document.getElementById('chatContainer');
+	const chatInput = document.getElementById('chatInput');
+	const sendBtn = document.getElementById('sendBtn');
+
+	const originalSendIcon = sendBtn.innerHTML;
+	const loadingSpinner = `
+	  <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+		<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+		<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+	  </svg>`;
+
+	function highlightCodeBlocks(container) {
+	  container.querySelectorAll('pre code').forEach((block) => {
+		hljs.highlightElement(block);
+	  });
+	}
+	
+	function highlightCodeBlocks(container) {
+	  container.querySelectorAll('pre code').forEach((block) => {
+		hljs.highlightElement(block);
+	  });
+	}
+
+	function appendChatBubble(from, text) {
+	  const wrapper = document.createElement('div');
+	  wrapper.classList.add('flex', 'flex-col', from === 'ai' ? 'justify-start' : 'justify-end');
+
+	  const label = document.createElement('label');
+	  label.textContent = from === 'ai' ? 'MWA-AI' : 'You';
+	  label.classList.add('text-gray-700', 'dark:text-gray-200');
+	  if (from === 'user') label.classList.add('text-right');
+	  wrapper.appendChild(label);
+
+	  const bubbleWrapper = document.createElement('div');
+	  bubbleWrapper.classList.add('flex');
+	  if (from === 'user') bubbleWrapper.classList.add('justify-end');
+	  wrapper.appendChild(bubbleWrapper);
+
+	  const bubble = document.createElement('div');
+	  const aiClasses = 'bg-gray-100 dark:bg-neutral-900 rounded-xl rounded-tl-none max-w-[80%] px-4 py-3 prose prose-sm prose-neutral dark:prose-invert'.split(' ');
+	  const userClasses = 'bg-green-400 dark:bg-green-700 text-white rounded-xl rounded-tr-none max-w-[80%] px-4 py-3'.split(' ');
+
+	  bubble.classList.add(...(from === 'ai' ? aiClasses : userClasses));
+	  if (from === 'ai') {
+		bubble.innerHTML = marked.parse(text);
+		highlightCodeBlocks(bubble);
+	  } else {
+		bubble.textContent = text;
+	  }
+
+	  bubbleWrapper.appendChild(bubble);
+	  chatContainer.appendChild(wrapper);
+	  chatContainer.scrollTop = chatContainer.scrollHeight;
+	}
+
+
+	async function sendMessage() {
+	  const prompt = chatInput.value.trim();
+	  if (!prompt) return;
+
+	  appendChatBubble('user', prompt);
+	  chatInput.value = '';
+	  chatInput.disabled = true;
+	  sendBtn.disabled = true;
+	  sendBtn.innerHTML = loadingSpinner;
+
+	  try {
+		const response = await fetch('/ai/text', {
+		  method: 'POST',
+		  headers: { 'Content-Type': 'application/json' },
+		  body: JSON.stringify({ prompt })
+		});
+
+		const data = await response.json();
+
+		if (data.success) {
+		  appendChatBubble('ai', data.text);
+		} else {
+		  const errMsg = data.error || 'Unknown error';
+		  if (errMsg.includes('403') || errMsg.toLowerCase().includes('unregistered callers')) {
+			appendChatBubble('ai', 'API key is not configured. Please set API key in settings to continue.');
+		  } else {
+			appendChatBubble('ai', 'Error: ' + errMsg);
+		  }
+		}
+	  } catch (error) {
+		appendChatBubble('ai', 'Error: ' + error.message);
+	  } finally {
+		chatInput.disabled = false;
+		sendBtn.disabled = false;
+		sendBtn.innerHTML = originalSendIcon;
+		chatInput.focus();
+	  }
+	}
+
+	sendBtn.addEventListener('click', sendMessage);
+	chatInput.addEventListener('keydown', e => {
+	if (e.key === 'Enter' && !e.shiftKey) {
+	  e.preventDefault();
+	  sendMessage();
+	 }
+	});
+	</script>
+</body>
+</html>

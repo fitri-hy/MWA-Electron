@@ -4,6 +4,7 @@ const { clearAllData } = require('./tab');
 const { createBotWindow } = require('./botWindow');
 const { createAutoReplyWindow } = require('./autoReplyWindow');
 const { createSettingWindow } = require('./settingWindow');
+const { createAIWindow } = require('./aiWindow');
 
 async function checkForUpdates(win) {
   const releasesUrl = 'https://api.github.com/repos/fitri-hy/MWA-Electron/releases/latest';
@@ -113,6 +114,12 @@ function menuApp(win, tabsFilePath, tabsData) {
       label: 'Auto Reply',
       click: () => {
         createAutoReplyWindow();
+      },
+    },
+    {
+      label: 'AI',
+      click: () => {
+        createAIWindow();
       },
     },
 	{

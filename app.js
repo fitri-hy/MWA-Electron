@@ -9,6 +9,7 @@ const http = require('http');
 const socketIO = require('socket.io');
 const { ensureAutoRepliesFile, readAutoReplies, saveAutoReplies, ensureFirstMessageFile, readFirstMessage, saveFirstMessage, clearFirstTimeUsers } = require('./utils/autoReplyHelper');
 const { lockscreenMiddleware, lockscreenGet, lockscreenPost, settingData } = require('./utils/lockscreen');
+const { generateText } = require('./utils/gemini');
 const initBotSocket = require('./utils/bot/botSocket');
 
 const app = express();
@@ -235,27 +236,28 @@ app.get('/setting', (req, res) => {
   const homeDir = os.homedir();
   const configDir = path.join(homeDir, '.config', 'M-WA', 'setting');
   const settingPath = path.join(configDir, 'setting.json');
+  const geminiPath = path.join(configDir, 'gemini.json');
 
   let settings = { password: '', enabled: false };
-
+  let gemini = { apikey: '' };
+ 
   try {
-    if (!fs.existsSync(configDir)) {
-      fs.mkdirSync(configDir, { recursive: true });
-    }
     if (fs.existsSync(settingPath)) {
-      const fileData = fs.readFileSync(settingPath, 'utf8');
-      settings = JSON.parse(fileData);
-    } else {
-      fs.writeFileSync(settingPath, JSON.stringify(settings, null, 2));
+      settings = JSON.parse(fs.readFileSync(settingPath, 'utf8'));
+    }
+
+    if (fs.existsSync(geminiPath)) {
+      gemini = JSON.parse(fs.readFileSync(geminiPath, 'utf8'));
     }
   } catch (err) {
-    console.error('Error reading/writing setting file:', err);
+    console.error('Error reading config files:', err);
   }
 
   res.render('setting', {
     darkMode: req.darkMode || false,
     title: 'Setting | M-WA',
     enabled: settings.enabled,
+	apikey: gemini.apikey,
     success_msg: req.flash('success_msg'),
     error_msg: req.flash('error_msg'),
   });
@@ -319,10 +321,66 @@ app.post('/setting/toggle', (req, res) => {
   fs.writeFile(settingPath, JSON.stringify(settings, null, 2), (err) => {
     if (err) {
       console.error('Failed to write settings:', err);
-      req.flash('error_msg', 'Gagal memperbarui toggle');
+      req.flash('error_msg', 'Failed to update button');
       return res.redirect('/setting');
     }
-    req.flash('success_msg', 'Toggle berhasil diperbarui');
+    req.flash('success_msg', 'Toggle successfully updated');
+    res.redirect('/setting');
+  });
+});
+
+app.get('/ai', (req, res) => {
+  res.render('ai', {
+    darkMode,
+    title: 'AI | M-WA',
+    chats: []
+  });
+});
+
+app.post('/ai/text', async (req, res) => {
+  const { prompt, model = 'gemini-2.0-flash' } = req.body;
+
+  if (!prompt) {
+    return res.status(400).json({ success: false, error: 'Prompt is required' });
+  }
+
+  try {
+    const text = await generateText(model, prompt);
+    res.json({ success: true, text });
+  } catch (err) {
+    //console.error('Error generateText:', err);
+    res.status(500).json({ success: false, error: err.message || 'Internal Server Error' });
+  }
+});
+
+app.post('/setting/gemini', (req, res) => {
+  const homeDir = os.homedir();
+  const configDir = path.join(homeDir, '.config', 'M-WA', 'setting');
+  const settingPath = path.join(configDir, 'gemini.json');
+
+  if (!fs.existsSync(configDir)) {
+    fs.mkdirSync(configDir, { recursive: true });
+  }
+
+  let currentSetting = { apikey: '' };
+  if (fs.existsSync(settingPath)) {
+    try {
+      const raw = fs.readFileSync(settingPath, 'utf-8');
+      currentSetting = JSON.parse(raw);
+    } catch (err) {
+      console.error('Failed to read existing settings:', err);
+    }
+  }
+
+  currentSetting.apikey = req.body.apikey;
+
+  fs.writeFile(settingPath, JSON.stringify(currentSetting, null, 2), (err) => {
+    if (err) {
+      console.error('Failed to write settings:', err);
+      req.flash('error_msg', 'Failed to save settings');
+      return res.redirect('/setting');
+    }
+    req.flash('success_msg', 'Settings updated successfully');
     res.redirect('/setting');
   });
 });
