@@ -6,55 +6,31 @@
 
 ## 🚀 Features
 
-* ✅ Multi-tab support for opening multiple WhatsApp Web accounts
-* ✅ Each account runs in a separate session partition
-* ✅ Sessions are saved locally—no need to log in every time
-* ✅ Lightweight and easy-to-use interface
-* ✅ Built with Electron + Node.js
-* ✅ Dark & Light Mode
+* Multi-tab to open multiple WhatsApp accounts
+* Sessions are saved locally—no need to log in every time
+* Lightweight and easy to use interface
+* Dark & ​​Light Mode
+* Bailey WhatsApp Bot Integration
+* Multi Device For Bots
+* Auto Greeting For First Message
+* Auto Reply From Bots
+* Gemini AI Integration
+* Lock Screen
+* More
 
----
 
-## 🖥️ Screenshot
-
-<img src="./public/assets/images/ss.jpg">
-
----
-
-## 📦 Installation
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/fitri-hy/MWA-Electron.git
-cd MWA-Electron
-```
-
-### 2. Install dependencies
-
-```bash
-npm install
-```
-
-### 3. Run the app
-
-```bash
-npm start
-```
-
-### 3. Build the app
-
-```bash
-npm run build
-```
-
----
 
 ## 🧩 Notes
 
 * WhatsApp accounts stay logged in as long as session partitions aren't cleared.
 * Make sure you're using the latest version of WhatsApp Web for the best compatibility.
 * This app does **not** store your data on any server—all session data is kept locally.
+
+---
+
+## 🖥️ Screenshot
+
+<img src="./public/assets/images/ss.jpg">
 
 ---
 
