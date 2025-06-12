@@ -12,6 +12,7 @@ async function checkForUpdates(win) {
     const response = await axios.get(releasesUrl);
     const latest = response.data;
     const latestVersion = latest.tag_name;
+    const releaseNotes = latest.body || 'No details provided.';
     const currentVersion = app.getVersion();
 
     if (latestVersion !== currentVersion) {
@@ -23,7 +24,7 @@ async function checkForUpdates(win) {
         defaultId: 0,
         cancelId: 1,
         title: 'Update Available',
-        message: `Latest version available: ${latestVersion}\nCurrent version: ${currentVersion}\n\nDo you want to download the update?`,
+        message: `Latest version available: ${latestVersion}\nCurrent version: ${currentVersion}\n\nChangelog:\n${releaseNotes}\n\nDo you want to download the update?`,
       });
 
       if (result.response === 0 && downloadUrl) {
