@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en" class="<%= darkMode ? 'dark' : '' %>">
+<head>
+  <%- include('partials/head') %>
+</head>
+<body class="bg-gray-50 dark:bg-neutral-800 text-gray-700 dark:text-gray-200 text-sm">
+	<main class="w-full flex flex-col">
+		<div id="pos-nav" class="h-8 font-semibold px-2 w-full flex gap-2 items-center overflow-x-auto text-gray-600 dark:text-gray-300">
+			<%- include('partials/pos-menu') %>
+		</div>
+		<div class="bg-white dark:bg-neutral-900 p-3 w-full h-[calc(100vh-32px)] overflow-y-auto">
+			Report
+		</div>
+	</main>
+
+	<script src="/assets/js/electronAPIPos.js"></script>
+</body>
+</html>

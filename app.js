@@ -11,6 +11,13 @@ const { ensureAutoRepliesFile, readAutoReplies, saveAutoReplies, ensureFirstMess
 const { lockscreenMiddleware, lockscreenGet, lockscreenPost, settingData } = require('./utils/lockscreen');
 const { generateText } = require('./utils/gemini');
 const { getNotes, addNote, editNote, deleteNote } = require('./utils/notes');
+const { 
+	invoice, createInvoice, 
+	vendor, addVendor, editVendor, deleteVendor,
+	inventory, addInventory, editInventory, deleteInventory, addStockInventory, writeOffStockInventory,
+	customer, addCustomer, editCustomer, deleteCustomer,
+	report 
+} = require('./utils/pos/pos');
 const initBotSocket = require('./utils/bot/botSocket');
 
 const app = express();
@@ -443,6 +450,250 @@ app.post('/notes/delete/:id', (req, res) => {
   }
 
   res.redirect('/notes');
+});
+
+app.get('/pos/invoice', (req, res) => {
+  invoice(res, darkMode);
+});
+
+app.post('/pos/invoice/create', (req, res) => {
+  const { date, invoice, id_customer, total, inventory } = req.body;
+
+  if (!date || !invoice || !id_customer || !total || !inventory) {
+    req.flash('error_msg', 'All fields are required!');
+    return res.redirect('/pos/invoice');
+  }
+
+  try {
+    const newInvoice = createInvoice({ date, invoice, id_customer, total, inventory });
+    req.flash('success_msg', 'Invoice created successfully!');
+    return res.redirect('/pos/invoice');
+  } catch (error) {
+    req.flash('error_msg', error.message || 'Internal server error');
+    return res.redirect('/pos/invoice');
+  }
+});
+
+app.post('/pos/invoice/new-customer', (req, res) => {
+  const { name, phone, city, state, code_pos, address } = req.body;
+
+  if (!name || !phone || !city || !state || !code_pos || !address) {
+    req.flash('error_msg', 'All fields are required!');
+    return res.redirect('/pos/invoice');
+  }
+
+  const customerData = { name, phone, city, state, code_pos, address };
+  addCustomer(customerData);
+
+  req.flash('success_msg', 'Customer added successfully!');
+  res.redirect('/pos/invoice');
+});
+
+app.get('/pos/vendor', (req, res) => {
+  vendor(req, res, darkMode);
+});
+
+app.post('/pos/vendor/add', (req, res) => {
+  const { vendor } = req.body;
+  if (!vendor) {
+    req.flash('error_msg', 'Vendor name is required');
+    return res.redirect('/pos/vendor');
+  }
+
+  addVendor(vendor);
+  req.flash('success_msg', 'Vendor added successfully');
+  res.redirect('/pos/vendor');
+});
+
+app.post('/pos/vendor/edit', (req, res) => {
+  const { id, vendor } = req.body;
+  const vendorId = parseInt(id);
+  if (!vendor || isNaN(vendorId)) {
+    req.flash('error_msg', 'Valid ID and vendor name required');
+    return res.redirect('/pos/vendor');
+  }
+
+  const updated = editVendor(vendorId, vendor);
+  if (updated) {
+    req.flash('success_msg', 'Vendor updated successfully');
+  } else {
+    req.flash('error_msg', 'Vendor not found');
+  }
+  res.redirect('/pos/vendor');
+});
+
+app.post('/pos/vendor/delete', (req, res) => {
+  const { id } = req.body;
+  const vendorId = parseInt(id);
+  if (isNaN(vendorId)) {
+    req.flash('error_msg', 'Valid ID required');
+    return res.redirect('/pos/vendor');
+  }
+
+  const deleted = deleteVendor(vendorId);
+  if (deleted) {
+    req.flash('success_msg', 'Vendor deleted successfully');
+  } else {
+    req.flash('error_msg', 'Vendor not found');
+  }
+  res.redirect('/pos/vendor');
+});
+
+app.get('/pos/inventory', (req, res) => {
+  inventory(req, res, darkMode);
+});
+
+app.post('/pos/inventory/add', (req, res) => {
+  const { vendor_id, item, cogs, price } = req.body;
+
+  if (!vendor_id || !item || !cogs || !price) {
+    req.flash('error_msg', 'All fields are required!');
+    return res.redirect('/pos/inventory');
+  }
+
+  addInventory(parseInt(vendor_id), item, 0, cogs, price);
+
+  req.flash('success_msg', 'Inventory added successfully!');
+  res.redirect('/pos/inventory');
+});
+
+app.post('/pos/inventory/edit', (req, res) => {
+  const { id, vendor_id, item, cogs, price } = req.body;
+
+  if (!id || !vendor_id || !item || !cogs || !price) {
+    req.flash('error_msg', 'All fields are required!');
+    return res.redirect('/pos/inventory');
+  }
+
+  const updatedData = {
+    vendor_id: parseInt(vendor_id),
+    item: item.trim(),
+    cogs: parseFloat(cogs),
+    price: parseFloat(price)
+  };
+
+  const success = editInventory(parseInt(id), updatedData);
+
+  if (success) {
+    req.flash('success_msg', 'Inventory updated successfully!');
+  } else {
+    req.flash('error_msg', 'Failed to update inventory.');
+  }
+
+  res.redirect('/pos/inventory');
+});
+
+app.post('/pos/inventory/delete', (req, res) => {
+  const id = parseInt(req.body.id);
+  if (!id) {
+    req.flash('error_msg', 'Invalid inventory ID');
+    return res.redirect('/pos/inventory');
+  }
+
+  const success = deleteInventory(id);
+  if (success) {
+    req.flash('success_msg', 'Inventory deleted successfully');
+  } else {
+    req.flash('error_msg', 'Inventory not found or failed to delete');
+  }
+  res.redirect('/pos/inventory');
+});
+
+app.post('/pos/inventory/add-stock', (req, res) => {
+  const { id, stock } = req.body;
+
+  if (!id || !stock) {
+    req.flash('error_msg', 'All fields are required!');
+    return res.redirect('/pos/inventory');
+  }
+
+  const updated = addStockInventory(id, stock);
+
+  if (updated) {
+    req.flash('success_msg', 'Stock added successfully!');
+  } else {
+    req.flash('error_msg', 'Failed to add stock.');
+  }
+
+  res.redirect('/pos/inventory');
+});
+
+app.post('/pos/inventory/write-off-stock', (req, res) => {
+  const { id, stock } = req.body;
+
+  if (!id || !stock) {
+    req.flash('error_msg', 'All fields are required!');
+    return res.redirect('/pos/inventory');
+  }
+
+  const updated = writeOffStockInventory(id, stock);
+
+  if (updated) {
+    req.flash('success_msg', 'Write off stock successfully!');
+  } else {
+    req.flash('error_msg', 'Failed to Write off stock.');
+  }
+
+  res.redirect('/pos/inventory');
+});
+
+app.get('/pos/customer', (req, res) => {
+  customer(req, res, darkMode);
+});
+
+app.post('/pos/customer/add', (req, res) => {
+  const { name, phone, city, state, code_pos, address } = req.body;
+
+  if (!name || !phone || !city || !state || !code_pos || !address) {
+    req.flash('error_msg', 'All fields are required!');
+    return res.redirect('/pos/customer');
+  }
+
+  const customerData = { name, phone, city, state, code_pos, address };
+  addCustomer(customerData);
+
+  req.flash('success_msg', 'Customer added successfully!');
+  res.redirect('/pos/customer');
+});
+
+app.post('/pos/customer/delete', (req, res) => {
+  const id = parseInt(req.body.id);
+  if (!id) {
+    req.flash('error_msg', 'Invalid customer ID');
+    return res.redirect('/pos/customer');
+  }
+
+  const success = deleteCustomer(id);
+  if (success) {
+    req.flash('success_msg', 'Customer deleted successfully');
+  } else {
+    req.flash('error_msg', 'Customer not found or failed to delete');
+  }
+  res.redirect('/pos/customer');
+});
+
+app.get('/pos/report', (req, res) => {
+  report(res, darkMode);
+});
+
+app.post('/pos/customer/edit', (req, res) => {
+  const id = parseInt(req.body.id);
+  const { name, phone, city, state, code_pos, address } = req.body;
+
+  if (!id || !name || !phone || !city || !state || !code_pos || !address) {
+    req.flash('error_msg', 'All fields are required!');
+    return res.redirect('/pos/customer');
+  }
+
+  const success = editCustomer(id, { name, phone, city, state, code_pos, address });
+
+  if (success) {
+    req.flash('success_msg', 'Customer updated successfully!');
+  } else {
+    req.flash('error_msg', 'Customer not found or failed to update');
+  }
+
+  res.redirect('/pos/customer');
 });
 
 initBotSocket(io);

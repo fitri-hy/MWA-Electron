@@ -6,6 +6,7 @@ const { createAutoReplyWindow } = require('./autoReplyWindow');
 const { createSettingWindow } = require('./settingWindow');
 const { createAIWindow } = require('./aiWindow');
 const { createNotesWindow } = require('./notesWindow');
+const { createPosWindow } = require('./posWindow');
 
 async function checkForUpdates(win, silent = false) {
   const releasesUrl = 'https://api.github.com/repos/fitri-hy/MWA-Electron/releases/latest';
@@ -120,6 +121,12 @@ function menuApp(win, tabsFilePath, tabsData) {
       ],
     },
     {
+      label: 'POS',
+      click: () => {
+        createPosWindow();
+      },
+    },
+    {
       label: 'Bot',
       click: () => {
         createBotWindow();
@@ -132,15 +139,15 @@ function menuApp(win, tabsFilePath, tabsData) {
       },
     },
     {
-      label: 'AI',
-      click: () => {
-        createAIWindow();
-      },
-    },
-    {
       label: 'Notes',
       click: () => {
         createNotesWindow();
+      },
+    },
+    {
+      label: 'AI',
+      click: () => {
+        createAIWindow();
       },
     },
 	{

@@ -28,6 +28,17 @@ window.electronAPI.onToggleDarkMode((event, darkModeOn) => {
   localStorage.setItem('darkMode', darkModeOn);
 });
 
+// Nav Link
+const path = location.pathname;
+const links = document.querySelectorAll('#pos-nav a');
+
+links.forEach(link => {
+    if (path === link.getAttribute('href')) {
+		link.classList.add('border-green-500', 'dark:border-green-700');
+    } else {
+		link.classList.add('border-gray-300', 'dark:border-neutral-700');
+    }
+});
 
 // Flash
 window.addEventListener('DOMContentLoaded', () => {

@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en" class="<%= darkMode ? 'dark' : '' %>">
+<head>
+  <%- include('partials/head') %>
+</head>
+<body class="bg-gray-50 dark:bg-neutral-800 text-gray-700 dark:text-gray-200 text-sm">
+	<main class="w-full flex flex-col">
+		<div id="pos-nav" class="h-8 font-semibold px-2 w-full flex gap-2 items-center overflow-x-auto text-gray-600 dark:text-gray-300">
+			<%- include('partials/pos-menu') %>
+		</div>
+		<div class="bg-white dark:bg-neutral-900 p-3 w-full h-[calc(100vh-32px)] overflow-y-auto">
+
+			<div class="flex justify-between gap-4">
+				<div class="w-full flex flex-col gap-1 mb-4">
+					<label>Invoice Preview</label>
+					<select id="inv-invoiceSelect" class="w-full max-w-xs px-4 py-2 rounded bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-green-400 dark:focus:border-green-800">
+					  <option value="">-- Select Invoice --</option>
+					  <% invoices.forEach(inv => { %>
+						<option value="<%= inv.invoice %>"><%= inv.customer.name %> (<%= inv.invoice %>)</option>
+					  <% }) %>
+					</select>
+				</div>
+				<div class="pr-2">
+					<h1 class="text-4xl font-bold">
+						INVOICE
+					</h1>
+				</div>
+			</div>
+			<div class="flex items-center justify-between gap-4">
+				<div class="w-full flex flex-col gap-1">
+					<label>Customer</label>
+					<select id="customerSelect" class="w-full max-w-xs px-4 py-2 rounded bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-green-400 dark:focus:border-green-800">
+						<option value="" disabled selected>-- Select Customer --</option>
+						<option value="new">New Customer</option>
+						<% customers.forEach(function(customer) { %>
+							<option value="<%= customer.id %>"><%= customer.name %>, <%= customer.address.length > 20 ? customer.address.slice(0, 20) + '...' : customer.address %></option>
+						<% }); %>
+					</select>
+				</div>
+				<div class="flex items-center gap-1">
+					<div class="flex flex-col gap-1">
+						<label>Invoice</label>
+						<input id="invoiceInput" type="text" disabled readonly class="px-4 py-2 rounded bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-green-400 dark:focus:border-green-800" />
+					</div>
+					<div class="flex flex-col gap-1">
+						<label>Date</label>
+						<input id="date" type="date" value="<%= new Date().toISOString().split('T')[0] %>" class="px-4 py-2 rounded bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-green-400 dark:focus:border-green-800" />
+					</div>
+				</div>
+			</div>
+			
+			<table class="w-full max-w-full bg-white dark:bg-neutral-900 mt-2">
+				<thead class="bg-green-500 dark:bg-green-700 text-white">
+					<tr>
+						<th class="text-left px-4 py-2">Item</th>
+						<th class="text-left px-4 py-2">Quantity</th>
+						<th class="text-left px-4 py-2">Price</th>
+						<th class="text-left px-4 py-2"></th>
+					</tr>
+				</thead>
+				<tbody id="itemTableBody">
+					<tr class="border-b border-gray-200 dark:border-neutral-700">
+						<td colspan="4" class="text-left w-full">
+							<select id="itemDropdown" class="cursor-pointer hover:bg-gray-50 dark:hover:bg-neutral-800 w-full px-4 py-2 bg-white dark:bg-neutral-900 focus:outline-none">
+								<option disabled selected>-- Select Item --</option>
+								<% inventory.forEach(function(item) { %>
+								  <option value="<%= item.id %>" <%= item.stock === 0 ? 'disabled style="color:gray;"' : '' %>><%= item.item %> (<%= item.stock %>)</option>
+								<% }); %>
+							</select>
+						</td>
+					</tr>
+				</tbody>
+				<tfoot class="bg-gray-100 dark:bg-neutral-700">
+					<tr class="font-bold">
+						<td colspan="3" class="w-full px-4 py-2">Total</td>
+						<td id="totalPrice" class="px-4 py-2 whitespace-nowrap">0</td>
+					</tr>
+				</tfoot>
+			</table>
+			
+			<div class="flex items-center justify-end mt-2">
+				<button id="saveBtn" type="submit" class="px-4 py-2 rounded bg-green-500 hover:bg-green-600 dark:bg-green-700 dark:hover:bg-green-600 text-white hover:scale-105 hover:duration-300 transition-all">
+					Save
+				</button>
+			</div>
+			
+		</div>
+	</main>
+
+	<div id="newCustomerModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+		<form action="/pos/invoice/new-customer" method="POST" class="bg-white dark:bg-neutral-800 rounded w-full max-w-md shadow-lg">
+			<div class="px-4 py-2 bg-green-500 rounded-t dark:bg-green-700">
+				<h2 class="text-xl font-semibold text-white">Add New Customer</h2>
+			</div>
+			<div class="p-4 flex flex-col gap-4">
+				<div class="flex flex-col gap-1">
+					<label>
+						Customer Name
+					</label>
+					<input name="name" required type="text" placeholder="Enter customer name..." class="w-full px-4 py-2 rounded bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-green-400 dark:focus:border-green-800"/>
+				</div>
+				<div class="flex flex-col gap-1">
+					<label>
+						Phone
+					</label>
+					<input name="phone" required type="number" placeholder="Enter customer name..." class="w-full px-4 py-2 rounded bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-green-400 dark:focus:border-green-800"/>
+				</div>
+				<div class="flex flex-col gap-1">
+					<label>
+						Address
+					</label>
+					<textarea name="address" required placeholder="Enter address..." class="w-full px-4 py-2 rounded bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-green-400 dark:focus:border-green-800"></textarea>
+				</div>
+				<div class="flex flex-col gap-1">
+					<label>
+						City
+					</label>
+					<input name="city" required type="text" placeholder="Enter city..." class="w-full px-4 py-2 rounded bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-green-400 dark:focus:border-green-800"/>
+				</div>
+				<div class="flex gap-5 items-center">
+					<div class="flex flex-col gap-1">
+						<label>
+							State
+						</label>
+						<input name="state" required type="text" placeholder="Enter state..." class="w-full px-4 py-2 rounded bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-green-400 dark:focus:border-green-800"/>
+					</div>
+					<div class="flex flex-col gap-1">
+						<label>
+							Code ZIP
+						</label>
+						<input name="code_pos" required type="number" placeholder="Enter zip code..." class="w-full px-4 py-2 rounded bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-green-400 dark:focus:border-green-800"/>
+					</div>
+				</div>
+				<div class="flex justify-end gap-2">
+					<button type="button" id="closeModal" class="px-4 py-2 rounded bg-rose-500 hover:bg-rose-600 dark:bg-rose-700 dark:hover:bg-rose-600 text-white hover:scale-105 hover:duration-300 transition-all">
+						Cancel
+					</button>
+					<button type="submit" class="px-4 py-2 rounded bg-green-500 hover:bg-green-600 dark:bg-green-700 dark:hover:bg-green-600 text-white hover:scale-105 hover:duration-300 transition-all">
+						Save
+					</button>
+				</div>
+			</div>
+		</form>
+	</div>
+	
+	<div id="inv-invoiceModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+		<div class="relative bg-white dark:bg-neutral-800 rounded w-full max-w-md shadow-lg p-4">
+			<button id="inv-closeModal" class="absolute top-0 right-2 text-rose-500 dark:text-rose-700 hover:text-rose-600 dark:hover:rose-600 text-2xl font-bold">&times;</button>
+			<div id="inv-modalContent"></div>
+			<div class="mt-4 flex w-full justify-center">
+			<button id="inv-printBtn" class="flex items-center gap-2 px-4 py-2 rounded bg-green-500 hover:bg-green-600 dark:bg-green-700 dark:hover:bg-green-600 text-white hover:scale-105 hover:duration-300 transition-all">
+				<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M16 6H8c-2.828 0-4.243 0-5.121.879C2 7.757 2 9.172 2 12s0 4.243.879 5.121c.494.495 1.158.711 2.149.806C5 17.204 5 16.352 5 15.5a.5.5 0 0 1 0-1h14a.5.5 0 0 1 0 1c0 .852 0 1.704-.028 2.427c.99-.095 1.655-.311 2.15-.806C22 16.243 22 14.828 22 12s0-4.243-.879-5.121C20.243 6 18.828 6 16 6m-7 4.75a.75.75 0 0 0 0-1.5H6a.75.75 0 0 0 0 1.5zm8 .25a1 1 0 1 0 0-2a1 1 0 0 0 0 2" clip-rule="evenodd"/><path fill="currentColor" d="M17.121 2.879C16.242 2 14.828 2 12 2s-4.243 0-5.122.879c-.492.492-.708 1.153-.804 2.136C6.634 5 7.252 5 7.93 5h8.142c.677 0 1.295 0 1.854.015c-.095-.983-.312-1.644-.804-2.136M18 15.5c0 2.828 0 4.743-.879 5.621C16.243 22 14.828 22 12 22s-4.243 0-5.121-.879C6 20.243 6 18.328 6 15.5z"/></svg>
+				Print
+			</button>
+			</div>
+		</div>
+	</div>
+
+	
+	<% if (success_msg && success_msg.length > 0) { %>
+	  <div id="flash-message" class="fixed bottom-2 right-2 text-xs px-2 py-1 rounded bg-green-500 dark:bg-green-700 text-white font-semibold shadow-lg z-50">
+		<%= success_msg[0] %>
+	  </div>
+	<% } %>
+
+	<% if (error_msg && error_msg.length > 0) { %>
+	  <div id="flash-message" class="fixed bottom-2 right-2 text-xs px-2 py-1 rounded bg-rose-500 dark:bg-rose-700 text-white font-semibold shadow-lg z-50">
+		<%= error_msg[0] %>
+	  </div>
+	<% } %>
+	<script src="/assets/js/electronAPIPos.js"></script>
+	<script>
+		const inventoryData = <%- JSON.stringify(inventory) %>;
+		const dropdown = document.getElementById('itemDropdown');
+		const tableBody = document.getElementById('itemTableBody');
+		const totalPriceEl = document.getElementById('totalPrice');
+
+		dropdown.addEventListener('change', function () {
+		  const selectedId = this.value;
+		  const selectedItem = inventoryData.find(item => item.id == selectedId);
+		  if (!selectedItem) return;
+
+		  const row = document.createElement('tr');
+		  row.className = "border-b border-gray-200 dark:border-neutral-700";
+
+		  row.innerHTML = `
+			<td class="text-left px-4 py-2 w-full">
+			  <div class="overflow-hidden line-clamp-1 font-semibold">${selectedItem.item}</div>
+			</td>
+			<td class="text-left px-4 py-1 whitespace-nowrap">
+				<input type="number" value="1" min="1" class="qty-input p-1 border border-gray-200 dark:border-neutral-700 rounded w-20 focus:outline-none text-center bg-transparent"
+				data-price="${selectedItem.price}">
+			</td>
+			<td class="text-left px-4 py-2 min-w-[100px] whitespace-nowrap">
+				${selectedItem.price}
+			</td>
+			<td class="w-[48px] text-center">
+			  <button class="delete-btn text-rose-500 p-2 dark:text-rose-700">
+				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M12 22c-4.714 0-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12s0-7.071 1.464-8.536C4.93 2 7.286 2 12 2s7.071 0 8.535 1.464C22 4.93 22 7.286 22 12s0 7.071-1.465 8.535C19.072 22 16.714 22 12 22M8.97 8.97a.75.75 0 0 1 1.06 0L12 10.94l1.97-1.97a.75.75 0 0 1 1.06 1.06L13.06 12l1.97 1.97a.75.75 0 1 1-1.06 1.06L12 13.06l-1.97 1.97a.75.75 0 1 1-1.06-1.06L10.94 12l-1.97-1.97a.75.75 0 0 1 0-1.06" clip-rule="evenodd"/></svg>
+			  </button>
+			</td>
+		  `;
+
+		  tableBody.appendChild(row);
+		  dropdown.selectedIndex = 0;
+
+		  row.querySelector('.qty-input').addEventListener('input', recalculateTotal);
+		  row.querySelector('.delete-btn').addEventListener('click', function () {
+			row.remove();
+			recalculateTotal();
+		  });
+
+		  recalculateTotal();
+		});
+
+		function recalculateTotal() {
+		  let total = 0;
+		  const qtyInputs = document.querySelectorAll('.qty-input');
+		  qtyInputs.forEach(input => {
+			const qty = parseInt(input.value) || 0;
+			const price = parseInt(input.dataset.price) || 0;
+			total += qty * price;
+		  });
+		  totalPriceEl.textContent = total;
+		}
+		  
+		const today = new Date().toISOString().split('T')[0];
+		document.querySelector('input[type="date"]').value = today;
+		  
+		function generateInvoiceNo() {
+		  const now = new Date();
+		  const pad2 = n => n.toString().padStart(2, '0');
+		  const hour = pad2(now.getHours());
+		  const minute = pad2(now.getMinutes());
+		  const second = pad2(now.getSeconds());
+		  const day = pad2(now.getDate());
+		  const month = pad2(now.getMonth() + 1);
+		  const year = now.getFullYear().toString().slice(-2);
+		  const randomNum = Math.floor(10000 + Math.random() * 90000);
+
+		  return `#${hour}${minute}${second}${day}${month}${year}-${randomNum}`;
+		}
+
+		document.addEventListener('DOMContentLoaded', () => {
+		  document.getElementById('invoiceInput').value = generateInvoiceNo();
+		});
+		  
+		document.getElementById('saveBtn').addEventListener('click', function (e) {
+		  e.preventDefault();
+		  const customerSelect = document.getElementById('customerSelect');
+		  const id_customer = customerSelect.value;
+		  const invoice = document.getElementById('invoiceInput').value;
+		  const date = document.getElementById('date').value;
+		  const total = document.getElementById('totalPrice').textContent;
+
+		  const itemRows = Array.from(document.querySelectorAll('#itemTableBody tr')).filter(row => 
+			!row.querySelector('#itemDropdown')
+		  );
+
+		  const inventory = itemRows.map(row => {
+			const itemName = row.querySelector('td div').textContent;
+			const item = inventoryData.find(i => i.item === itemName);
+			const id_item = item ? item.id : null;
+			const qtyInput = row.querySelector('input.qty-input');
+			const qty = qtyInput ? qtyInput.value : 0;
+
+			return {
+			  id_item: id_item,
+			  qty: qty
+			};
+		  }).filter(i => i.id_item !== null);
+
+		  if (!date) {
+			alert('The date cannot be empty!');
+			return;
+		  }
+		  if (!invoice) {
+			alert('Invoice cannot be empty!');
+			return;
+		  }
+		  if (!id_customer || id_customer === "new") {
+			alert('Customer must be selected!');
+			return;
+		  }
+		  if (!total || total === '0') {
+			alert('The total cannot be empty or zero!');
+			return;
+		  }
+		  if (!inventory.length) {
+			alert('Inventory cannot be empty!');
+			return;
+		  }
+  
+		  const data = {
+			date: date,
+			invoice: invoice,
+			id_customer: id_customer,
+			total: total,
+			inventory: inventory
+		  };
+
+		  fetch('/pos/invoice/create', {
+			method: 'POST',
+			headers: {
+			  'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(data)
+		  })
+		  .then(res => {
+		    if (res.redirected) {
+			  window.location.href = res.url;
+			  return;
+			}
+			if (!res.ok) throw new Error('Network response was not ok');
+			return res.json();
+		  })
+		  .then(responseData => {
+			console.log('Success:', responseData);
+			alert('Invoice saved successfully!');
+		  })
+		  .catch(error => {
+			console.error('Error:', error);
+			alert('Failed to save invoice!');
+		  });
+		});
+	</script>
+	<script>
+		const select = document.getElementById('customerSelect');
+		const modal = document.getElementById('newCustomerModal');
+		const closeBtn = document.getElementById('closeModal');
+
+		select.addEventListener('change', () => {
+			if (select.value === 'new') {
+			select.selectedIndex = 0;
+			modal.classList.remove('hidden');
+			}
+		});
+
+		closeBtn.addEventListener('click', () => {
+			modal.classList.add('hidden');
+		});
+
+		modal.addEventListener('click', (e) => {
+			if (e.target === modal) {
+			modal.classList.add('hidden');
+			}
+		});
+	</script>
+	<script>
+		(function() {
+		  const invoices = <%- JSON.stringify(invoices) %>;
+		  const customers = <%- JSON.stringify(customers) %>;
+		  const inventory = <%- JSON.stringify(inventory) %>;
+
+		  const invoiceSelect = document.getElementById('inv-invoiceSelect');
+		  const modal = document.getElementById('inv-invoiceModal');
+		  const modalContent = document.getElementById('inv-modalContent');
+		  const closeModal = document.getElementById('inv-closeModal');
+		  const printBtn = document.getElementById('inv-printBtn');
+
+		  invoiceSelect.addEventListener('change', () => {
+			const selectedInvoiceNumber = invoiceSelect.value;
+			if (!selectedInvoiceNumber) {
+			  modal.classList.add('hidden');
+			  return;
+			}
+
+			const inv = invoices.find(i => i.invoice === selectedInvoiceNumber);
+			if (!inv) return;
+
+			const cust = customers.find(c => c.id === inv.id_customer);
+
+			let html = `
+				<div class="flex flex-col gap-2 w-full justify-center items-center mb-4 border-b border-gray-200 dark:border-neutral-700">
+					<img class="h-20 w-20 object-cover mx-auto" src="/assets/images/logo.png" alt="logo" />
+					<div class="w-full text-center">
+						<h2 class="text-3xl font-bold">
+							M-WA
+						</h2>
+						<div class="font-semibold w-full flex justify-between gap-4 items-center mt-4">
+							<p>${inv.invoice}</p>
+							<p>${inv.date}</p>
+						</div>
+					</div>
+				</div>
+				<div class="grid grid-cols-1 gap-4">
+					<div>
+						<p class="font-semibold">Customer:</p>
+						<p class="text-xs">${cust ? cust.name : 'Unknown'}</p>
+						<p class="text-xs">${cust ? cust.phone : 'Unknown'}</p>
+						<p class="text-xs">${cust && cust.address ? cust.address : 'Unknown'}</p>
+						<p class="text-xs">${cust ? cust.city : 'Unknown'}</p>
+						<p class="text-xs">${cust ? cust.state : 'Unknown'}, ${cust ? cust.code_pos : 'Unknown'}</p>
+					</div>
+				</div>
+				<div class="font-semibold mt-4 flex justify-between gap-4 items-center p-2 bg-gray-100 dark:bg-neutral-900">
+					<p class="w-full">Items</p>
+					<p class="w-[80px] flex-none">Price</p>
+					<p class="w-[80px] flex-none">QTY</p>
+				</div>
+			  <ul class="text-xs flex flex-col border-b border-gray-200 dark:border-neutral-700">
+			`;
+			inv.inventory.forEach(item => {
+			  const invItem = inventory.find(i => i.id === item.id_item);
+			  html += `<li class="flex justify-between gap-4 items-center px-2 py-1">
+							<p class="w-full">${invItem ? invItem.item : 'Unknown'}<p>
+							<p class="w-[80px] flex-none">${item.price}</p>
+							<p class="w-[80px] flex-none">${item.qty}</p>
+					   </li>`;
+			});
+			html += `
+				</ul>
+				<div class="font-semibold flex justify-between gap-4 items-center px-2 py-1 border-b border-gray-200 dark:border-neutral-700">
+					<p class="w-full">Total</p>
+					<p class="w-[80px] flex-none">${inv.total}</p>
+				</div>
+			`;
+
+			modalContent.innerHTML = html;
+			modal.classList.remove('hidden');
+		  });
+
+		  closeModal.addEventListener('click', () => {
+			modal.classList.add('hidden');
+			invoiceSelect.value = '';
+		  });
+
+		  printBtn.addEventListener('click', () => {
+			const printContents = modalContent.innerHTML;
+			const originalContents = document.body.innerHTML;
+
+			document.body.innerHTML = printContents;
+			window.print();
+			document.body.innerHTML = originalContents;
+
+			location.reload();
+		  });
+		})();
+	</script>
+</body>
+</html>
