@@ -9,7 +9,40 @@ const inventoryPath = path.join(configDir, 'inventory.json');
 const customerPath = path.join(configDir, 'customer.json');
 const invoicePath = path.join(configDir, 'invoice.json');
 
+const filePaths = {
+  vendor: vendorPath,
+  inventory: inventoryPath,
+  customer: customerPath,
+  invoice: invoicePath
+};
+
+const ensureFilesExist = () => {
+  if (!fs.existsSync(configDir)) {
+    fs.mkdirSync(configDir, { recursive: true });
+    console.log(`Directory created: ${configDir}`);
+  }
+
+  Object.entries(filePaths).forEach(([name, file]) => {
+    if (!fs.existsSync(file)) {
+      fs.writeFileSync(file, '[]', 'utf-8');
+      console.log(`Generated empty file: ${name}.json`);
+    }
+  });
+};
+
+const watchFiles = () => {
+  Object.entries(filePaths).forEach(([name, file]) => {
+    fs.watch(file, (eventType) => {
+      if (eventType === 'change') {
+        // console.log(`[WATCH] ${name}.json changed at ${new Date().toLocaleTimeString()}`);
+      }
+    });
+  });
+};
+
 function invoice(res, darkMode) {
+  ensureFilesExist();
+
   fs.readFile(customerPath, 'utf-8', (err, customerData) => {
     if (err) {
       console.error('Failed to read customer.json:', err);
@@ -621,11 +654,143 @@ function editCustomer(id, updatedData) {
 
 // Report
 function report(res, darkMode) {
-  res.render('pos-report', { darkMode, title: 'Report | M-WA' });
+  fs.readFile(invoicePath, 'utf-8', (err, invoiceData) => {
+    if (err) return res.status(500).send('Failed to read invoice.json');
+
+    fs.readFile(inventoryPath, 'utf-8', (err, inventoryData) => {
+      if (err) return res.status(500).send('Failed to read inventory.json');
+
+      fs.readFile(customerPath, 'utf-8', (err, customerData) => {
+        if (err) return res.status(500).send('Failed to read customer.json');
+
+        fs.readFile(vendorPath, 'utf-8', (err, vendorData) => {
+          if (err) return res.status(500).send('Failed to read vendor.json');
+
+          let invoices = [];
+          let inventory = [];
+          let customers = [];
+          let vendors = [];
+
+          try {
+            invoices = JSON.parse(invoiceData);
+            inventory = JSON.parse(inventoryData);
+            customers = JSON.parse(customerData);
+            vendors = JSON.parse(vendorData);
+          } catch {
+            return res.status(500).send('Invalid JSON');
+          }
+
+          const inventoryMap = new Map(inventory.map(item => [item.id, item]));
+          const customerMap = new Map(customers.map(c => [Number(c.id), c]));
+
+          invoices = invoices.map(inv => {
+            let totalQty = 0;
+            let totalCOGS = 0;
+            let totalPrice = 0;
+
+            const enrichedItems = inv.inventory.map(i => {
+              const item = inventoryMap.get(i.id_item);
+              const qty = Number(i.qty) || 0;
+              const price = Number(item?.price || 0);
+              const cogs = Number(item?.cogs || 0);
+
+              totalQty += qty;
+              totalPrice += price * qty;
+              totalCOGS += cogs * qty;
+
+              return {
+                ...i,
+                item: item?.item || 'Unknown',
+                price,
+                cogs
+              };
+            });
+
+            return {
+              ...inv,
+              customer: customerMap.get(Number(inv.id_customer)) || { name: 'Unknown' },
+              inventory: enrichedItems,
+              itemCount: enrichedItems.length,
+              totalQty,
+              totalPrice,
+              totalCOGS,
+              profit: totalPrice - totalCOGS
+            };
+          });
+
+          let totalItem = 0;
+          let totalQty = 0;
+          let totalCOGS = 0;
+          let totalPrice = 0;
+          let totalProfit = 0;
+
+          invoices.forEach(inv => {
+            totalItem += inv.itemCount;
+            totalQty += inv.totalQty;
+            totalCOGS += inv.totalCOGS;
+            totalPrice += inv.totalPrice;
+            totalProfit += inv.profit;
+          });
+
+          const totalInvoiceCount = invoices.length;
+          const totalInvoiceAmount = invoices.reduce((sum, inv) => sum + Number(inv.total || 0), 0);
+          const totalCustomers = customers.length;
+          const totalVendors = vendors.length;
+
+          res.render('pos-report', {
+            darkMode,
+            title: 'Report | M-WA',
+            invoices,
+            totalItem,
+            totalQty,
+            totalCOGS,
+            totalPrice,
+            totalProfit,
+            totalInvoiceCount,
+            totalInvoiceAmount,
+            totalCustomers,
+            totalVendors
+          });
+        });
+      });
+    });
+  });
 }
 
+function deleteInvoice(id) {
+  try {
+    const invoices = JSON.parse(fs.readFileSync(invoicePath, 'utf-8'));
+    const inventory = JSON.parse(fs.readFileSync(inventoryPath, 'utf-8'));
+
+    const invoiceIndex = invoices.findIndex(inv => Number(inv.id) === Number(id));
+    if (invoiceIndex === -1) return false;
+
+    const invoiceToDelete = invoices[invoiceIndex];
+
+    invoiceToDelete.inventory.forEach(invItem => {
+      const item = inventory.find(i => Number(i.id) === Number(invItem.id_item));
+      if (item) {
+        item.stock = (Number(item.stock) || 0) + Number(invItem.qty || 0);
+      }
+    });
+
+    invoices.splice(invoiceIndex, 1);
+
+    fs.writeFileSync(invoicePath, JSON.stringify(invoices, null, 2));
+    fs.writeFileSync(inventoryPath, JSON.stringify(inventory, null, 2));
+
+    return true;
+  } catch (err) {
+    console.error('Delete error:', err);
+    return false;
+  }
+}
+
+ensureFilesExist();
+watchFiles();
+
 module.exports = {
-  invoice, createInvoice,
+  invoice, createInvoice, deleteInvoice,
   vendor, addVendor, editVendor, deleteVendor,
   inventory, addInventory, editInventory, deleteInventory, addStockInventory, writeOffStockInventory,
   customer, addCustomer, editCustomer, deleteCustomer,

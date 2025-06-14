@@ -8,11 +8,112 @@
 		<div id="pos-nav" class="h-8 font-semibold px-2 w-full flex gap-2 items-center overflow-x-auto text-gray-600 dark:text-gray-300">
 			<%- include('partials/pos-menu') %>
 		</div>
-		<div class="bg-white dark:bg-neutral-900 p-3 w-full h-[calc(100vh-32px)] overflow-y-auto">
-			Report
+		<div class="bg-white dark:bg-neutral-900 p-3 w-full h-[calc(100vh-32px)] overflow-auto">
+			
+			<div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+				<div class="p-4 rounded text-white bg-purple-500 dark:bg-purple-700 border border-gray-200 dark:border-neutral-700">
+					<h2 class="font-semibold">
+						Invoice
+					</h2>
+					<p class="text-center text-2xl font-bold mt-1">
+						<%= totalInvoiceCount %>
+					</p>
+				</div>
+				<div class="p-4 rounded text-white bg-blue-500 dark:bg-blue-700 border border-gray-200 dark:border-neutral-700">
+					<h2 class="font-semibold">
+						Vendor
+					</h2>
+					<p class="text-center text-2xl font-bold mt-1">
+						<%= totalVendors %>
+					</p>
+				</div>
+				<div class="p-4 rounded text-white bg-pink-500 dark:bg-pink-700 border border-gray-200 dark:border-neutral-700">
+					<h2 class="font-semibold">
+						Customer
+					</h2>
+					<p class="text-center text-2xl font-bold mt-1">
+						<%= totalCustomers %>
+					</p>
+				</div>
+				<div class="p-4 rounded text-white bg-amber-500 dark:bg-amber-700 border border-gray-200 dark:border-neutral-700">
+					<h2 class="font-semibold">
+						Income
+					</h2>
+					<p class="text-center text-2xl font-bold mt-1">
+						<%= Number(totalInvoiceAmount).toLocaleString() %>
+					</p>
+				</div>
+			</div>
+		
+			<div class="overflow-x-auto">
+				<table class="mt-4 w-full max-w-full bg-white dark:bg-neutral-900 text-sm">
+					<thead class="bg-green-500 dark:bg-green-700 text-white">
+						<tr>
+							<th class="text-left px-4 py-2 whitespace-nowrap">Invoice</th>
+							<th class="text-left px-4 py-2 whitespace-nowrap">Date</th>
+							<th class="text-center px-4 py-2 whitespace-nowrap">Item | QTY</th>
+							<th class="text-left px-4 py-2 whitespace-nowrap">COGS | Price</th>
+							<th class="text-left px-4 py-2 whitespace-nowrap">Profit</th>
+							<th class="text-center px-4 py-2 whitespace-nowrap">Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr class="font-semibold bg-gray-100 dark:bg-neutral-800">
+							<td colspan="2" class="p-2">
+								Total
+							</td>
+							<td class="p-2 text-center whitespace-nowrap">
+								<%= totalItem %> | <%= totalQty %>
+							</td>
+							<td class="p-2 whitespace-nowrap">
+								<%= Number(totalCOGS).toLocaleString() %> | <%= Number(totalPrice).toLocaleString() %>
+							</td>
+							<td class="p-2 whitespace-nowrap">
+								<%= Number(totalProfit).toLocaleString() %>
+							</td>
+							<td class="p-2 whitespace-nowrap">
+							</td>
+						</tr>
+						<% invoices.forEach(inv => { %>
+							<tr class="border-b border-gray-200 dark:border-neutral-700">
+								<td class="text-left p-2 whitespace-nowrap"><%= inv.invoice %></td>
+								<td class="p-2 text-center whitespace-nowrap"><%= inv.date %></td>
+								<td class="p-2 text-center whitespace-nowrap"><%= inv.itemCount %> | <%= inv.totalQty %></td>
+								<td class="p-2 whitespace-nowrap">
+									<%= Number(inv.totalCOGS).toLocaleString() %> | <%= Number(inv.totalPrice).toLocaleString() %>
+								</td>
+								<td class="p-2 whitespace-nowrap">
+									<%= Number(inv.profit).toLocaleString() %>
+								</td>
+								<td class="text-center px-4 py-2">
+									<div class="flex items-center justify-center gap-1">
+										<form action="/pos/report/delete-invoice" method="POST" onsubmit="return confirm('Are you sure you want to delete this data?');">
+											<input type="hidden" name="id" value="<%= inv.id %>" />
+											<button type="submit" class="text-rose-500 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700">
+												<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M2.75 6.167c0-.46.345-.834.771-.834h2.665c.529-.015.996-.378 1.176-.916l.03-.095l.115-.372c.07-.228.131-.427.217-.605c.338-.702.964-1.189 1.687-1.314c.184-.031.377-.031.6-.031h3.478c.223 0 .417 0 .6.031c.723.125 1.35.612 1.687 1.314c.086.178.147.377.217.605l.115.372l.03.095c.18.538.74.902 1.27.916h2.57c.427 0 .772.373.772.834S20.405 7 19.979 7H3.52c-.426 0-.771-.373-.771-.833"/><path fill="currentColor" d="M11.607 22h.787c2.707 0 4.06 0 4.941-.863c.88-.864.97-2.28 1.15-5.111l.26-4.081c.098-1.537.147-2.305-.295-2.792s-1.187-.487-2.679-.487H8.23c-1.491 0-2.237 0-2.679.487s-.392 1.255-.295 2.792l.26 4.08c.18 2.833.27 4.248 1.15 5.112S8.9 22 11.607 22" opacity="0.5"/></svg>
+											</button>
+										</form>
+									</div>
+								</td>
+							</tr>
+						<% }) %>
+					</tbody>
+				</table>
+			</div>
 		</div>
 	</main>
 
+	<% if (success_msg && success_msg.length > 0) { %>
+		<div id="flash-message" class="fixed bottom-2 right-2 text-xs px-2 py-1 rounded bg-green-500 dark:bg-green-700 text-white font-semibold shadow-lg z-50">
+			<%= success_msg[0] %>
+		</div>
+	<% } %>
+
+	<% if (error_msg && error_msg.length > 0) { %>
+		<div id="flash-message" class="fixed bottom-2 right-2 text-xs px-2 py-1 rounded bg-rose-500 dark:bg-rose-700 text-white font-semibold shadow-lg z-50">
+			<%= error_msg[0] %>
+		</div>
+	<% } %>
 	<script src="/assets/js/electronAPIPos.js"></script>
 </body>
 </html>

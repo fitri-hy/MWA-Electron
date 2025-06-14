@@ -12,7 +12,7 @@ const { lockscreenMiddleware, lockscreenGet, lockscreenPost, settingData } = req
 const { generateText } = require('./utils/gemini');
 const { getNotes, addNote, editNote, deleteNote } = require('./utils/notes');
 const { 
-	invoice, createInvoice, 
+	invoice, createInvoice, deleteInvoice,
 	vendor, addVendor, editVendor, deleteVendor,
 	inventory, addInventory, editInventory, deleteInventory, addStockInventory, writeOffStockInventory,
 	customer, addCustomer, editCustomer, deleteCustomer,
@@ -672,10 +672,6 @@ app.post('/pos/customer/delete', (req, res) => {
   res.redirect('/pos/customer');
 });
 
-app.get('/pos/report', (req, res) => {
-  report(res, darkMode);
-});
-
 app.post('/pos/customer/edit', (req, res) => {
   const id = parseInt(req.body.id);
   const { name, phone, city, state, code_pos, address } = req.body;
@@ -694,6 +690,31 @@ app.post('/pos/customer/edit', (req, res) => {
   }
 
   res.redirect('/pos/customer');
+});
+
+app.get('/pos/report', (req, res) => {
+  report(res, darkMode);
+});
+
+app.post('/pos/report/delete-invoice', (req, res) => {
+  const id = parseInt(req.body.id);
+  if (!id) {
+    req.flash('error_msg', 'Invalid invoice ID');
+    return res.redirect('/pos/report');
+  }
+
+  try {
+    const success = deleteInvoice(id);
+    if (success) {
+      req.flash('success_msg', 'Invoice deleted successfully');
+    } else {
+      req.flash('error_msg', 'Invoice not found');
+    }
+  } catch (err) {
+    req.flash('error_msg', 'Failed to delete invoice');
+  }
+
+  res.redirect('/pos/report');
 });
 
 initBotSocket(io);

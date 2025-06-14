@@ -158,15 +158,15 @@
 
 	
 	<% if (success_msg && success_msg.length > 0) { %>
-	  <div id="flash-message" class="fixed bottom-2 right-2 text-xs px-2 py-1 rounded bg-green-500 dark:bg-green-700 text-white font-semibold shadow-lg z-50">
-		<%= success_msg[0] %>
-	  </div>
+		<div id="flash-message" class="fixed bottom-2 right-2 text-xs px-2 py-1 rounded bg-green-500 dark:bg-green-700 text-white font-semibold shadow-lg z-50">
+			<%= success_msg[0] %>
+		</div>
 	<% } %>
 
 	<% if (error_msg && error_msg.length > 0) { %>
-	  <div id="flash-message" class="fixed bottom-2 right-2 text-xs px-2 py-1 rounded bg-rose-500 dark:bg-rose-700 text-white font-semibold shadow-lg z-50">
-		<%= error_msg[0] %>
-	  </div>
+		<div id="flash-message" class="fixed bottom-2 right-2 text-xs px-2 py-1 rounded bg-rose-500 dark:bg-rose-700 text-white font-semibold shadow-lg z-50">
+			<%= error_msg[0] %>
+		</div>
 	<% } %>
 	<script src="/assets/js/electronAPIPos.js"></script>
 	<script>
@@ -176,32 +176,40 @@
 		const totalPriceEl = document.getElementById('totalPrice');
 
 		dropdown.addEventListener('change', function () {
-		  const selectedId = this.value;
-		  const selectedItem = inventoryData.find(item => item.id == selectedId);
-		  if (!selectedItem) return;
+			const selectedId = this.value;
+			const selectedItem = inventoryData.find(item => item.id == selectedId);
+			if (!selectedItem) return;
 
-		  const row = document.createElement('tr');
-		  row.className = "border-b border-gray-200 dark:border-neutral-700";
+			const row = document.createElement('tr');
+			row.className = "border-b border-gray-200 dark:border-neutral-700";
 
-		  row.innerHTML = `
-			<td class="text-left px-4 py-2 w-full">
-			  <div class="overflow-hidden line-clamp-1 font-semibold">${selectedItem.item}</div>
-			</td>
-			<td class="text-left px-4 py-1 whitespace-nowrap">
-				<input type="number" value="1" min="1" class="qty-input p-1 border border-gray-200 dark:border-neutral-700 rounded w-20 focus:outline-none text-center bg-transparent"
-				data-price="${selectedItem.price}">
-			</td>
-			<td class="text-left px-4 py-2 min-w-[100px] whitespace-nowrap">
-				${selectedItem.price}
-			</td>
-			<td class="w-[48px] text-center">
-			  <button class="delete-btn text-rose-500 p-2 dark:text-rose-700">
-				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M12 22c-4.714 0-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12s0-7.071 1.464-8.536C4.93 2 7.286 2 12 2s7.071 0 8.535 1.464C22 4.93 22 7.286 22 12s0 7.071-1.465 8.535C19.072 22 16.714 22 12 22M8.97 8.97a.75.75 0 0 1 1.06 0L12 10.94l1.97-1.97a.75.75 0 0 1 1.06 1.06L13.06 12l1.97 1.97a.75.75 0 1 1-1.06 1.06L12 13.06l-1.97 1.97a.75.75 0 1 1-1.06-1.06L10.94 12l-1.97-1.97a.75.75 0 0 1 0-1.06" clip-rule="evenodd"/></svg>
-			  </button>
-			</td>
-		  `;
+			row.innerHTML = `
+				<td class="text-left px-4 py-2 w-full">
+					<div class="overflow-hidden line-clamp-1 font-semibold">${selectedItem.item}</div>
+				</td>
+				<td class="text-left px-4 py-1 whitespace-nowrap">
+					<input 
+					type="number" 
+					value="1" 
+					min="1" 
+					max="${selectedItem.stock}" 
+					class="qty-input p-1 border border-gray-200 dark:border-neutral-700 rounded w-20 focus:outline-none text-center bg-transparent"
+					data-price="${selectedItem.price}" 
+					data-stock="${selectedItem.stock}">
+				</td>
+				<td class="text-left px-4 py-2 min-w-[100px] whitespace-nowrap">
+					${selectedItem.price}
+				</td>
+				<td class="w-[48px] text-center">
+					<button class="delete-btn text-rose-500 p-2 dark:text-rose-700">
+					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+						<path fill="currentColor" fill-rule="evenodd" d="...svg-path..." clip-rule="evenodd"/>
+					</svg>
+					</button>
+				</td>
+			`;
 
-		  tableBody.appendChild(row);
+			tableBody.appendChild(row);
 		  dropdown.selectedIndex = 0;
 
 		  row.querySelector('.qty-input').addEventListener('input', recalculateTotal);
@@ -211,6 +219,17 @@
 		  });
 
 		  recalculateTotal();
+		  const qtyInput = row.querySelector('.qty-input');
+			qtyInput.addEventListener('input', () => {
+			const max = parseInt(qtyInput.getAttribute('max'));
+			let val = parseInt(qtyInput.value);
+			if (val > max) {
+				qtyInput.value = max;
+			} else if (val < 1 || isNaN(val)) {
+				qtyInput.value = 1;
+			}
+			recalculateTotal();
+			});
 		});
 
 		function recalculateTotal() {
