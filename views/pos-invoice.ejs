@@ -157,11 +157,11 @@
 		<div class="relative bg-white dark:bg-neutral-800 rounded w-full max-w-md shadow-lg p-4">
 			<button id="inv-closeModal" class="absolute top-0 right-2 text-rose-500 dark:text-rose-700 hover:text-rose-600 dark:hover:rose-600 text-2xl font-bold">&times;</button>
 			<div id="inv-modalContent"></div>
-			<div class="mt-4 flex w-full justify-center">
-			<button id="inv-printBtn" class="flex items-center gap-2 px-4 py-2 rounded bg-green-500 hover:bg-green-600 dark:bg-green-700 dark:hover:bg-green-600 text-white hover:scale-105 hover:duration-300 transition-all">
-				<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M16 6H8c-2.828 0-4.243 0-5.121.879C2 7.757 2 9.172 2 12s0 4.243.879 5.121c.494.495 1.158.711 2.149.806C5 17.204 5 16.352 5 15.5a.5.5 0 0 1 0-1h14a.5.5 0 0 1 0 1c0 .852 0 1.704-.028 2.427c.99-.095 1.655-.311 2.15-.806C22 16.243 22 14.828 22 12s0-4.243-.879-5.121C20.243 6 18.828 6 16 6m-7 4.75a.75.75 0 0 0 0-1.5H6a.75.75 0 0 0 0 1.5zm8 .25a1 1 0 1 0 0-2a1 1 0 0 0 0 2" clip-rule="evenodd"/><path fill="currentColor" d="M17.121 2.879C16.242 2 14.828 2 12 2s-4.243 0-5.122.879c-.492.492-.708 1.153-.804 2.136C6.634 5 7.252 5 7.93 5h8.142c.677 0 1.295 0 1.854.015c-.095-.983-.312-1.644-.804-2.136M18 15.5c0 2.828 0 4.743-.879 5.621C16.243 22 14.828 22 12 22s-4.243 0-5.121-.879C6 20.243 6 18.328 6 15.5z"/></svg>
-				Print
-			</button>
+			<div class="mt-4 flex w-full gap-2 justify-center items-center">
+				<button id="inv-printBtn" class="flex items-center gap-2 px-4 py-2 rounded bg-green-500 hover:bg-green-600 dark:bg-green-700 dark:hover:bg-green-600 text-white hover:scale-105 hover:duration-300 transition-all">
+					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M16 6H8c-2.828 0-4.243 0-5.121.879C2 7.757 2 9.172 2 12s0 4.243.879 5.121c.494.495 1.158.711 2.149.806C5 17.204 5 16.352 5 15.5a.5.5 0 0 1 0-1h14a.5.5 0 0 1 0 1c0 .852 0 1.704-.028 2.427c.99-.095 1.655-.311 2.15-.806C22 16.243 22 14.828 22 12s0-4.243-.879-5.121C20.243 6 18.828 6 16 6m-7 4.75a.75.75 0 0 0 0-1.5H6a.75.75 0 0 0 0 1.5zm8 .25a1 1 0 1 0 0-2a1 1 0 0 0 0 2" clip-rule="evenodd"/><path fill="currentColor" d="M17.121 2.879C16.242 2 14.828 2 12 2s-4.243 0-5.122.879c-.492.492-.708 1.153-.804 2.136C6.634 5 7.252 5 7.93 5h8.142c.677 0 1.295 0 1.854.015c-.095-.983-.312-1.644-.804-2.136M18 15.5c0 2.828 0 4.743-.879 5.621C16.243 22 14.828 22 12 22s-4.243 0-5.121-.879C6 20.243 6 18.328 6 15.5z"/></svg>
+					Print
+				</button>
 			</div>
 		</div>
 	</div>
@@ -445,6 +445,7 @@
 		const modal = document.getElementById('inv-invoiceModal');
 		const modalContent = document.getElementById('inv-modalContent');
 		const closeModal = document.getElementById('inv-closeModal');
+		const printBtn = document.getElementById('inv-printBtn');
 
 		function renderOptions(filter = '') {
 		  const filtered = invoices.filter((inv) => {
@@ -567,6 +568,44 @@
 
 		closeModal.addEventListener('click', () => {
 		  modal.classList.add('hidden');
+		});
+
+		printBtn.addEventListener('click', () => {
+		  const content = modalContent.innerHTML;
+
+		  const styles = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
+			.map(node => node.outerHTML)
+			.join('\n');
+
+		  const printWindow = window.open('', '', 'width=800,height=600');
+		  printWindow.document.write(`
+			<html>
+			  <head>
+				<title>Print Invoice</title>
+				${styles}
+				<style>
+				  body {
+					background: white;
+					color: black;
+					font-family: Arial, sans-serif;
+				  }
+				</style>
+			  </head>
+			  <body>
+				<div id="printable-invoice" class="p-4 bg-white text-black">
+				  ${content}
+				</div>
+			  </body>
+			</html>
+		  `);
+		  printWindow.document.close();
+
+		  printWindow.focus();
+
+		  printWindow.onload = function () {
+			printWindow.print();
+			printWindow.close();
+		  };
 		});
 
 	  })();
