@@ -19,6 +19,7 @@ const {
 	report 
 } = require('./utils/pos/pos');
 const initBotSocket = require('./utils/bot/botSocket');
+const { sendMessageBySessionId, getSessions  } = require('./utils/bot/sessionManager');
 
 const app = express();
 const server = http.createServer(app);
@@ -715,6 +716,33 @@ app.post('/pos/report/delete-invoice', (req, res) => {
   }
 
   res.redirect('/pos/report');
+});
+
+app.post('/webhook/send-message', async (req, res) => {
+  const { sessionId, number, message } = req.body;
+
+  if (!sessionId || !number || !message) {
+    return res.status(400).json({ success: false, error: 'sessionId, number, and message are required' });
+  }
+
+  try {
+    await sendMessageBySessionId(sessionId, number, message);
+
+    res.json({ success: true, message: 'Message sent successfully' });
+  } catch (error) {
+    console.error('Failed to send message:', error);
+    res.status(500).json({ success: false, error: error.message || 'Internal server error' });
+  }
+});
+
+app.get('/webhook/sessions', (req, res) => {
+  try {
+    const sessions = getSessions();
+    res.json({ success: true, sessions });
+  } catch (err) {
+    console.error('Failed to take registration session:', err);
+    res.status(500).json({ success: false, error: 'Failed to fetch session list' });
+  }
 });
 
 initBotSocket(io);

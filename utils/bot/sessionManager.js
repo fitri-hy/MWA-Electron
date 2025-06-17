@@ -93,10 +93,20 @@ function disconnectSession(sessionId, socket) {
   }
 }
 
+async function sendMessageBySessionId(sessionId, number, message) {
+  const sock = sessions[sessionId];
+  if (!sock) {
+    throw new Error('Session not found or not yet connected');
+  }
+  const jid = number.includes('@s.whatsapp.net') ? number : `${number}@s.whatsapp.net`;
+  await sock.sendMessage(jid, { text: message });
+}
+
 module.exports = {
   startSession,
   restartSession,
   getSessions,
   deleteSession,
   disconnectSession,
+  sendMessageBySessionId,
 };

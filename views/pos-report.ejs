@@ -242,11 +242,32 @@
 		<div class="relative bg-white dark:bg-neutral-800 rounded w-full max-w-md shadow-lg p-4">
 			<button id="inv-closeModal" class="absolute top-0 right-2 text-rose-500 dark:text-rose-700 hover:text-rose-600 dark:hover:rose-600 text-2xl font-bold">&times;</button>
 			<div id="inv-modalContent"></div>
-			<div class="mt-4 flex w-full justify-center">
-			<button id="inv-printBtn" class="flex items-center gap-2 px-4 py-2 rounded bg-green-500 hover:bg-green-600 dark:bg-green-700 dark:hover:bg-green-600 text-white hover:scale-105 hover:duration-300 transition-all">
-				<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M16 6H8c-2.828 0-4.243 0-5.121.879C2 7.757 2 9.172 2 12s0 4.243.879 5.121c.494.495 1.158.711 2.149.806C5 17.204 5 16.352 5 15.5a.5.5 0 0 1 0-1h14a.5.5 0 0 1 0 1c0 .852 0 1.704-.028 2.427c.99-.095 1.655-.311 2.15-.806C22 16.243 22 14.828 22 12s0-4.243-.879-5.121C20.243 6 18.828 6 16 6m-7 4.75a.75.75 0 0 0 0-1.5H6a.75.75 0 0 0 0 1.5zm8 .25a1 1 0 1 0 0-2a1 1 0 0 0 0 2" clip-rule="evenodd"/><path fill="currentColor" d="M17.121 2.879C16.242 2 14.828 2 12 2s-4.243 0-5.122.879c-.492.492-.708 1.153-.804 2.136C6.634 5 7.252 5 7.93 5h8.142c.677 0 1.295 0 1.854.015c-.095-.983-.312-1.644-.804-2.136M18 15.5c0 2.828 0 4.743-.879 5.621C16.243 22 14.828 22 12 22s-4.243 0-5.121-.879C6 20.243 6 18.328 6 15.5z"/></svg>
-				Print
-			</button>
+			<div class="mt-4 flex w-full gap-2 justify-center items-center">
+				<button id="inv-printBtn" class="flex items-center gap-2 px-4 py-2 rounded bg-green-500 hover:bg-green-600 dark:bg-green-700 dark:hover:bg-green-600 text-white hover:scale-105 hover:duration-300 transition-all">
+					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M16 6H8c-2.828 0-4.243 0-5.121.879C2 7.757 2 9.172 2 12s0 4.243.879 5.121c.494.495 1.158.711 2.149.806C5 17.204 5 16.352 5 15.5a.5.5 0 0 1 0-1h14a.5.5 0 0 1 0 1c0 .852 0 1.704-.028 2.427c.99-.095 1.655-.311 2.15-.806C22 16.243 22 14.828 22 12s0-4.243-.879-5.121C20.243 6 18.828 6 16 6m-7 4.75a.75.75 0 0 0 0-1.5H6a.75.75 0 0 0 0 1.5zm8 .25a1 1 0 1 0 0-2a1 1 0 0 0 0 2" clip-rule="evenodd"/><path fill="currentColor" d="M17.121 2.879C16.242 2 14.828 2 12 2s-4.243 0-5.122.879c-.492.492-.708 1.153-.804 2.136C6.634 5 7.252 5 7.93 5h8.142c.677 0 1.295 0 1.854.015c-.095-.983-.312-1.644-.804-2.136M18 15.5c0 2.828 0 4.743-.879 5.621C16.243 22 14.828 22 12 22s-4.243 0-5.121-.879C6 20.243 6 18.328 6 15.5z"/></svg>
+					Print
+				</button>
+				<button id="inv-downloadBtn" class="flex items-center gap-2 px-4 py-2 rounded bg-blue-500 hover:bg-blue-600 dark:bg-blue-700 dark:hover:bg-blue-600 text-white hover:scale-105 hover:duration-300 transition-all">
+				  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M5 20h14v-2H5v2zm7-18l-5.5 5.5h4v6h3v-6h4L12 2z"/></svg>
+				  PDF
+				</button>
+				<button id="inv-sendWaBtn" class="flex items-center gap-2 px-4 py-2 rounded bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-700 dark:hover:bg-emerald-600 text-white hover:scale-105 hover:duration-300 transition-all">
+				  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M12 0C5.375 0 0 5.375 0 12c0 2.11.547 4.164 1.582 5.969L0 24l6.285-1.617A11.917 11.917 0 0 0 12 24c6.625 0 12-5.375 12-12S18.625 0 12 0zm0 22c-1.73 0-3.41-.438-4.914-1.27l-.351-.191L2 22l1.451-4.648-.25-.398C2.547 15.867 2 13.977 2 12c0-5.516 4.484-10 10-10s10 4.484 10 10-4.484 10-10 10z"/><path fill="currentColor" d="M17.5 14.5c-.27-.135-1.594-.789-1.84-.879-.246-.09-.43-.135-.613.135s-.703.879-.863 1.059c-.16.18-.317.203-.586.068c-.27-.135-1.141-.42-2.176-1.34-.804-.715-1.344-1.598-1.5-1.867c-.16-.27-.017-.414.12-.549c.123-.123.27-.318.405-.48c.135-.163.18-.27.27-.45c.09-.18.045-.338-.023-.473c-.068-.135-.613-1.48-.84-2.035c-.222-.535-.45-.465-.613-.472l-.52-.01c-.18 0-.47.068-.717.34c-.246.27-.938.918-.938 2.237c0 1.32.96 2.594 1.093 2.773c.135.18 1.89 2.887 4.57 4.05c.639.276 1.137.441 1.525.565c.641.204 1.224.175 1.684.106c.514-.076 1.594-.652 1.82-1.281c.226-.629.226-1.168.158-1.282c-.068-.114-.247-.18-.516-.315z"/></svg>
+				  WhatsApp
+				</button>
+			</div>
+		</div>
+	</div>
+	
+	<div id="sessionModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+		<div class="bg-white dark:bg-neutral-800 rounded w-full max-w-sm shadow-lg p-4">
+			<h2 class="text-lg font-semibold mb-2">Select Bot</h2>
+			<select id="sessionSelect" class="w-full px-4 py-2 rounded bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-green-400 dark:focus:border-green-800">
+				<option value="">Loading...</option>
+			</select>
+			<div class="flex justify-end gap-2 mt-4">
+				<button id="cancelSessionBtn" class="px-4 py-2 rounded bg-rose-500 hover:bg-rose-600 dark:bg-rose-700 dark:hover:bg-rose-600 text-white hover:scale-105 hover:duration-300 transition-all">Cancel</button>
+				<button id="confirmSessionBtn" class="px-4 py-2 rounded bg-green-500 hover:bg-green-600 dark:bg-green-700 dark:hover:bg-green-600 text-white hover:scale-105 hover:duration-300 transition-all">Send</button>
 			</div>
 		</div>
 	</div>
@@ -262,6 +283,8 @@
 			<%= error_msg[0] %>
 		</div>
 	<% } %>
+	
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 	<script src="/assets/js/electronAPIPos.js"></script>
 	<script>
 		function showTab(tab) {
@@ -321,6 +344,8 @@
 		const modal = document.getElementById('inv-invoiceModal');
 		const modalContent = document.getElementById('inv-modalContent');
 		const closeModal = document.getElementById('inv-closeModal');
+		const printBtn = document.getElementById('inv-printBtn');
+		const downloadBtn = document.getElementById('inv-downloadBtn');
 
 		function renderOptions(filter = '') {
 		  const filtered = invoices.filter((inv) => {
@@ -444,6 +469,163 @@
 		closeModal.addEventListener('click', () => {
 		  modal.classList.add('hidden');
 		});
+
+		printBtn.addEventListener('click', () => {
+		  const content = modalContent.innerHTML;
+
+		  const styles = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
+			.map(node => node.outerHTML)
+			.join('\n');
+
+		  const printWindow = window.open('', '', 'width=800,height=600');
+		  printWindow.document.write(`
+			<html>
+			  <head>
+				<title>Print Invoice</title>
+				${styles}
+				<style>
+				  body {
+					background: white;
+					color: black;
+					font-family: Arial, sans-serif;
+				  }
+				</style>
+			  </head>
+			  <body>
+				<div id="printable-invoice" class="p-4 bg-white text-black">
+				  ${content}
+				</div>
+			  </body>
+			</html>
+		  `);
+		  printWindow.document.close();
+
+		  printWindow.focus();
+
+		  printWindow.onload = function () {
+			printWindow.print();
+			printWindow.close();
+		  };
+		});
+		
+		downloadBtn.addEventListener('click', () => {
+		  const element = document.createElement('div');
+		  element.innerHTML = modalContent.innerHTML;
+		  element.style.padding = '1rem';
+		  element.style.backgroundColor = 'white';
+		  element.style.color = 'black';
+
+		  html2pdf()
+			.set({
+			  margin: 10,
+			  filename: 'invoice.pdf',
+			  image: { type: 'jpeg', quality: 0.98 },
+			  html2canvas: { scale: 2 },
+			  jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+			})
+			.from(element)
+			.save();
+		});
+				
+		const sendWaBtn = document.getElementById('inv-sendWaBtn');
+		const sessionModal = document.getElementById('sessionModal');
+		const sessionSelect = document.getElementById('sessionSelect');
+		const cancelSessionBtn = document.getElementById('cancelSessionBtn');
+		const confirmSessionBtn = document.getElementById('confirmSessionBtn');
+
+		let selectedInvoice = null;
+		
+		sendWaBtn.addEventListener('click', async () => {
+		  const match = selectedValue.textContent.match(/\((.*?)\)/);
+		  selectedInvoice = invoices.find(i => i.invoice === (match ? match[1] : null));
+		  if (!selectedInvoice) return alert('Invoice data not found');
+
+		  try {
+			const res = await fetch('/webhook/sessions');
+			const data = await res.json();
+
+			if (!data.success || !Array.isArray(data.sessions) || data.sessions.length === 0) {
+			  alert('No active bot sessions.');
+			  return;
+			}
+
+			sessionSelect.innerHTML = data.sessions
+			  .map(sess => {
+				const disabled = sess.status === 'not_connected' ? 'disabled' : '';
+				return `
+				<option value="" disabled selected>-- Select Bot --</option>
+				<option value="${sess.sessionId}" ${disabled}>${sess.sessionId} (${sess.status})</option>
+				`;
+			  })
+			  .join('');
+
+			sessionModal.classList.remove('hidden');
+		  } catch (err) {
+			console.error(err);
+			alert('Failed to retrieve bot session.');
+		  }
+		});
+
+		cancelSessionBtn.addEventListener('click', () => {
+		  sessionModal.classList.add('hidden');
+		});
+
+		confirmSessionBtn.addEventListener('click', async () => {
+		  const sessionId = sessionSelect.value;
+		  const cust = customers.find(c => String(c.id) === String(selectedInvoice.id_customer));
+		  if (!sessionId || !cust || !cust.phone) return alert('Incomplete data');
+
+		  const message = `*Invoice:* ${selectedInvoice.invoice}
+*Date:* ${selectedInvoice.date}
+
+*Customer:*
+${cust.name}
+${cust.phone}
+${cust.address || '-'}
+${cust.city || '-'}, ${cust.state || '-'} ${cust.code_pos || ''}
+
+*Items:*
+${selectedInvoice.inventory.map(item => {
+const invItem = inventory.find(i => i.id === item.id_item);
+const itemName = invItem ? invItem.item : 'Unknown';
+const price = Number(item.price).toLocaleString();
+	return `- ${itemName} | Price: ${item.qty} x ${price}`;
+}).join('\n')}
+
+*Total:* ${Number(selectedInvoice.total).toLocaleString()}`;
+
+		  try {
+			const res = await fetch('/webhook/send-message', {
+			  method: 'POST',
+			  headers: { 'Content-Type': 'application/json' },
+			  body: JSON.stringify({
+				sessionId,
+				number: cust.phone,
+				message
+			  })
+			});
+
+			const text = await res.text();
+
+			if (!res.ok) {
+			  throw new Error(`HTTP error! status: ${res.status}, message: ${text}`);
+			}
+
+			const result = JSON.parse(text);
+
+			if (result.success) {
+			  alert('Message sent successfully!');
+			} else {
+			  alert('Failed to send message');
+			}
+		  } catch (err) {
+			console.error('Error while sending message:', err);
+			alert('An error occurred while sending the message: ' + err.message);
+		  }
+
+		  sessionModal.classList.add('hidden');
+		});
+
 
 	  })();
 	</script>
