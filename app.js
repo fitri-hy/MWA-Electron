@@ -600,14 +600,14 @@ app.post('/pos/inventory/delete', (req, res) => {
 });
 
 app.post('/pos/inventory/add-stock', (req, res) => {
-  const { id, stock } = req.body;
+  const { id, stock, desc, date } = req.body;
 
-  if (!id || !stock) {
+  if (!id || !stock || !desc || !date) {
     req.flash('error_msg', 'All fields are required!');
     return res.redirect('/pos/inventory');
   }
 
-  const updated = addStockInventory(id, stock);
+  const updated = addStockInventory(id, stock, desc, date);
 
   if (updated) {
     req.flash('success_msg', 'Stock added successfully!');
@@ -619,19 +619,19 @@ app.post('/pos/inventory/add-stock', (req, res) => {
 });
 
 app.post('/pos/inventory/write-off-stock', (req, res) => {
-  const { id, stock } = req.body;
+  const { id, stock, desc, date } = req.body;
 
-  if (!id || !stock) {
+  if (!id || !stock || !desc || !date) {
     req.flash('error_msg', 'All fields are required!');
     return res.redirect('/pos/inventory');
   }
 
-  const updated = writeOffStockInventory(id, stock);
+  const updated = writeOffStockInventory(id, stock, desc, date);
 
   if (updated) {
     req.flash('success_msg', 'Write off stock successfully!');
   } else {
-    req.flash('error_msg', 'Failed to Write off stock.');
+    req.flash('error_msg', 'Failed to write off stock.');
   }
 
   res.redirect('/pos/inventory');

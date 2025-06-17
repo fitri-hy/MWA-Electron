@@ -49,7 +49,7 @@
 				<tbody>
 					<% if (inventorys.length === 0) { %>
 						<tr>
-							<td colspan="6" class="text-center border-b py-2 px-4 border-gray-200 dark:border-neutral-700">No vendor available.</td>
+							<td colspan="6" class="text-center border-b py-2 px-4 border-gray-200 dark:border-neutral-700">No inventory available.</td>
 						</tr>
 					<% } else { %>
 					<% inventorys.forEach(inventory => { %>
@@ -235,6 +235,22 @@
 						<input min="1" name="stock" required type="number" placeholder="Enter stock ..." class="w-full rounded-r px-4 py-2 bg-white dark:bg-neutral-900 border-r border-t border-b border-gray-200 dark:border-neutral-700 focus:border focus:outline-none focus:border-green-400 dark:focus:border-green-800"/>
 					</div>
 				</div>
+				<div class="flex flex-col gap-1">
+					<label>
+						Date
+					</label>
+					<div class="flex items-center">
+						<input name="date" required value="<?= date('Y-m-d') ?>" type="date" class="w-full rounded px-4 py-2 bg-white dark:bg-neutral-900 border border-t border-b border-gray-200 dark:border-neutral-700 focus:border focus:outline-none focus:border-green-400 dark:focus:border-green-800"/>
+					</div>
+				</div>
+				<div class="flex flex-col gap-1">
+					<label>
+						Description
+					</label>
+					<div class="flex items-center">
+						<textarea name="desc" rows="4" required type="desc" placeholder="Enter description ..." class="w-full rounded px-4 py-2 bg-white dark:bg-neutral-900 border border-t border-b border-gray-200 dark:border-neutral-700 focus:border focus:outline-none focus:border-green-400 dark:focus:border-green-800"></textarea>
+					</div>
+				</div>
 				<div class="flex justify-end gap-2">
 					<button type="button" id="CloseStockButton" class="px-4 py-2 rounded bg-rose-500 hover:bg-rose-600 dark:bg-rose-700 dark:hover:bg-rose-600 text-white hover:scale-105 hover:duration-300 transition-all">
 						Cancel
@@ -274,6 +290,22 @@
 							<svg class="text-rose-500 dark:text-rose-700" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M22 12c0 5.523-4.477 10-10 10S2 17.523 2 12S6.477 2 12 2s10 4.477 10 10m-6.25 0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1 0-1.5h6a.75.75 0 0 1 .75.75" clip-rule="evenodd"/></svg>
 						</div>
 						<input id="writeOffInput" min="1" name="stock" required type="number" placeholder="Enter qty ..." class="w-full rounded-r px-4 py-2 bg-white dark:bg-neutral-900 border-r border-t border-b border-gray-200 dark:border-neutral-700 focus:border focus:outline-none focus:border-green-400 dark:focus:border-green-800"/>
+					</div>
+				</div>
+				<div class="flex flex-col gap-1">
+					<label>
+						Date
+					</label>
+					<div class="flex items-center">
+						<input name="date" required value="<?= date('Y-m-d') ?>" type="date" class="w-full rounded px-4 py-2 bg-white dark:bg-neutral-900 border border-t border-b border-gray-200 dark:border-neutral-700 focus:border focus:outline-none focus:border-green-400 dark:focus:border-green-800"/>
+					</div>
+				</div>
+				<div class="flex flex-col gap-1">
+					<label>
+						Description
+					</label>
+					<div class="flex items-center">
+						<textarea name="desc" rows="4" required type="desc" placeholder="Enter description ..." class="w-full rounded px-4 py-2 bg-white dark:bg-neutral-900 border border-t border-b border-gray-200 dark:border-neutral-700 focus:border focus:outline-none focus:border-green-400 dark:focus:border-green-800"></textarea>
 					</div>
 				</div>
 				<div class="flex justify-end gap-2">
@@ -360,6 +392,14 @@
 
 		CloseEInventoryButton.addEventListener('click', () => {
 		  EditInventoryModal.classList.add('hidden');
+		});
+		
+		document.addEventListener("DOMContentLoaded", () => {
+		  const dateInputs = document.querySelectorAll('input[type="date"]');
+		  const today = new Date().toISOString().split('T')[0];
+		  dateInputs.forEach(input => {
+			input.value = today;
+		  });
 		});
 	</script>
 </body>

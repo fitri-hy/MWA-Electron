@@ -13,12 +13,15 @@
 			<div class="flex justify-between gap-4">
 				<div class="w-full flex flex-col gap-1 mb-4">
 					<label>Invoice Preview</label>
-					<select id="inv-invoiceSelect" class="w-full max-w-xs px-4 py-2 rounded bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-green-400 dark:focus:border-green-800">
-					  <option value="">-- Select Invoice --</option>
-					  <% invoices.forEach(inv => { %>
-						<option value="<%= inv.invoice %>"><%= inv.customer.name %> (<%= inv.invoice %>)</option>
-					  <% }) %>
-					</select>
+					<div id="custom-select" class="relative w-full max-w-xs px-4 py-2 rounded bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-green-400 dark:focus:border-green-800 cursor-pointer">
+						<div id="selected-value" class="">
+							-- Select Invoice --
+						</div>
+						<div id="dropdown" class="absolute top-full left-0 right-0 bg-white dark:bg-neutral-900 border border-gray-300 dark:border-neutral-700 mt-1 rounded shadow max-h-64 overflow-auto hidden z-20">
+							<input type="text" id="dropdown-search" placeholder="Search invoices..." class="w-full px-3 py-2 border-b border-gray-300 dark:border-neutral-700 focus:outline-none dark:bg-neutral-900"/>
+							<ul id="options-list" class="max-h-48 overflow-auto"></ul>
+						</div>
+					</div>
 				</div>
 				<div class="pr-2">
 					<h1 class="text-4xl font-bold">
@@ -27,15 +30,22 @@
 				</div>
 			</div>
 			<div class="flex items-center justify-between gap-4">
-				<div class="w-full flex flex-col gap-1">
-					<label>Customer</label>
-					<select id="customerSelect" class="w-full max-w-xs px-4 py-2 rounded bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-green-400 dark:focus:border-green-800">
-						<option value="" disabled selected>-- Select Customer --</option>
-						<option value="new">New Customer</option>
-						<% customers.forEach(function(customer) { %>
-							<option value="<%= customer.id %>"><%= customer.name %>, <%= customer.address.length > 20 ? customer.address.slice(0, 20) + '...' : customer.address %></option>
-						<% }); %>
-					</select>
+				<div class="w-full flex flex-col gap-1 max-w-xs relative">
+				  <label>Customer</label>
+				  <div id="customerCustomSelect" class="w-full px-4 py-2 rounded bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-green-400 dark:focus:border-green-800 cursor-pointer select-none">
+					-- Select Customer --
+				  </div>
+				  <div id="customerDropdown" class="absolute top-full left-0 right-0 bg-white dark:bg-neutral-900 border border-gray-300 dark:border-neutral-700 mt-1 rounded shadow max-h-64 overflow-auto hidden z-20">
+					<input type="text" id="customerSearchInput" placeholder="Search customers..." class="w-full px-3 py-2 border-b border-gray-300 dark:border-neutral-700 focus:outline-none dark:bg-neutral-900"/>
+					<ul id="customerOptionsList" class="max-h-48 overflow-auto m-0 p-0 list-none"></ul>
+				  </div>
+				  <select id="customerSelect" name="customerSelect" class="hidden" >
+					<option value="" disabled selected>-- Select Customer --</option>
+					<option value="new">New Customer</option>
+					<% customers.forEach(function(customer) { %>
+					  <option value="<%= customer.id %>"><%= customer.name %>, <%= customer.address.length > 20 ? customer.address.slice(0, 20) + '...' : customer.address %></option>
+					<% }); %>
+				  </select>
 				</div>
 				<div class="flex items-center gap-1">
 					<div class="flex flex-col gap-1">
@@ -344,117 +354,224 @@
 		});
 	</script>
 	<script>
-		const select = document.getElementById('customerSelect');
-		const modal = document.getElementById('newCustomerModal');
-		const closeBtn = document.getElementById('closeModal');
+	(() => {
+	  const cs_select = document.getElementById('customerSelect');
+	  const cs_customSelect = document.getElementById('customerCustomSelect');
+	  const cs_dropdown = document.getElementById('customerDropdown');
+	  const cs_searchInput = document.getElementById('customerSearchInput');
+	  const cs_optionsList = document.getElementById('customerOptionsList');
+	  const cs_modal = document.getElementById('newCustomerModal');
+	  const cs_closeBtn = document.getElementById('customerCloseModal');
 
-		select.addEventListener('change', () => {
-			if (select.value === 'new') {
-			select.selectedIndex = 0;
-			modal.classList.remove('hidden');
+	  const cs_options = Array.from(cs_select.options)
+		.filter(opt => !opt.disabled)
+		.map(opt => ({ value: opt.value, text: opt.text }));
+
+	  function cs_renderOptions(filter = '') {
+		cs_optionsList.innerHTML = '';
+		const filtered = cs_options.filter(opt => opt.text.toLowerCase().includes(filter.toLowerCase()));
+		if (filtered.length === 0) {
+		  cs_optionsList.innerHTML = '<li style="padding:8px; color:#888;">No results found</li>';
+		  return;
+		}
+		filtered.forEach(opt => {
+		  const li = document.createElement('li');
+		  li.textContent = opt.text;
+		  li.dataset.value = opt.value;
+		  li.style.padding = '8px';
+		  li.style.cursor = 'pointer';
+		  li.style.userSelect = 'none';
+		  li.onmouseenter = () => li.style.backgroundColor = '#eee';
+		  li.onmouseleave = () => li.style.backgroundColor = '';
+		  li.onclick = () => {
+			if (opt.value === 'new') {
+			  cs_modal.classList.remove('hidden');
+			  cs_customSelect.textContent = '-- Select Customer --';
+			  cs_select.value = '';
+			} else {
+			  cs_customSelect.textContent = opt.text;
+			  cs_select.value = opt.value;
 			}
+			cs_dropdown.style.display = 'none';
+			cs_searchInput.value = '';
+		  };
+		  cs_optionsList.appendChild(li);
 		});
+	  }
 
-		closeBtn.addEventListener('click', () => {
-			modal.classList.add('hidden');
-		});
+	  cs_customSelect.addEventListener('click', () => {
+		if (cs_dropdown.style.display === 'block') {
+		  cs_dropdown.style.display = 'none';
+		} else {
+		  cs_dropdown.style.display = 'block';
+		  cs_searchInput.focus();
+		  cs_renderOptions();
+		}
+	  });
 
-		modal.addEventListener('click', (e) => {
-			if (e.target === modal) {
-			modal.classList.add('hidden');
-			}
-		});
+	  cs_searchInput.addEventListener('input', () => {
+		cs_renderOptions(cs_searchInput.value);
+	  });
+
+	  document.addEventListener('click', e => {
+		if (!cs_customSelect.contains(e.target) && !cs_dropdown.contains(e.target)) {
+		  cs_dropdown.style.display = 'none';
+		}
+	  });
+
+	  cs_closeBtn.addEventListener('click', () => cs_modal.classList.add('hidden'));
+	  cs_modal.addEventListener('click', e => {
+		if (e.target === cs_modal) {
+		  cs_modal.classList.add('hidden');
+		}
+	  });
+
+	  if (cs_select.value) {
+		const selectedOption = cs_options.find(opt => opt.value === cs_select.value);
+		if (selectedOption) cs_customSelect.textContent = selectedOption.text;
+	  }
+	})();
 	</script>
 	<script>
-		(function() {
-		  const invoices = <%- JSON.stringify(invoices) %>;
-		  const customers = <%- JSON.stringify(customers) %>;
-		  const inventory = <%- JSON.stringify(inventory) %>;
+	  (function () {
+		const invoices = <%- JSON.stringify(invoices) %>;
+		const customers = <%- JSON.stringify(customers) %>;
+		const inventory = <%- JSON.stringify(inventory) %>;
 
-		  const invoiceSelect = document.getElementById('inv-invoiceSelect');
-		  const modal = document.getElementById('inv-invoiceModal');
-		  const modalContent = document.getElementById('inv-modalContent');
-		  const closeModal = document.getElementById('inv-closeModal');
-		  const printBtn = document.getElementById('inv-printBtn');
+		const customSelect = document.getElementById('custom-select');
+		const selectedValue = document.getElementById('selected-value');
+		const dropdown = document.getElementById('dropdown');
+		const searchInput = document.getElementById('dropdown-search');
+		const optionsList = document.getElementById('options-list');
 
-		  invoiceSelect.addEventListener('change', () => {
-			const selectedInvoiceNumber = invoiceSelect.value;
-			if (!selectedInvoiceNumber) {
-			  modal.classList.add('hidden');
-			  return;
-			}
+		const modal = document.getElementById('inv-invoiceModal');
+		const modalContent = document.getElementById('inv-modalContent');
+		const closeModal = document.getElementById('inv-closeModal');
 
-			const inv = invoices.find(i => i.invoice === selectedInvoiceNumber);
-			if (!inv) return;
-
-			const cust = customers.find(c => c.id === inv.id_customer);
-
-			let html = `
-				<div class="flex flex-col gap-2 w-full justify-center items-center mb-4 border-b border-gray-200 dark:border-neutral-700">
-					<img class="h-20 w-20 object-cover mx-auto" src="/assets/images/logo.png" alt="logo" />
-					<div class="w-full text-center">
-						<h2 class="text-3xl font-bold">
-							M-WA
-						</h2>
-						<div class="font-semibold w-full flex justify-between gap-4 items-center mt-4">
-							<p>${inv.invoice}</p>
-							<p>${inv.date}</p>
-						</div>
-					</div>
-				</div>
-				<div class="grid grid-cols-1 gap-4">
-					<div>
-						<p class="font-semibold">Customer:</p>
-						<p class="text-xs">${cust ? cust.name : 'Unknown'}</p>
-						<p class="text-xs">${cust ? cust.phone : 'Unknown'}</p>
-						<p class="text-xs">${cust && cust.address ? cust.address : 'Unknown'}</p>
-						<p class="text-xs">${cust ? cust.city : 'Unknown'}</p>
-						<p class="text-xs">${cust ? cust.state : 'Unknown'}, ${cust ? cust.code_pos : 'Unknown'}</p>
-					</div>
-				</div>
-				<div class="font-semibold mt-4 flex justify-between gap-4 items-center p-2 bg-gray-100 dark:bg-neutral-900">
-					<p class="w-full">Items</p>
-					<p class="w-[80px] flex-none">Price</p>
-					<p class="w-[80px] flex-none">QTY</p>
-				</div>
-			  <ul class="text-xs flex flex-col border-b border-gray-200 dark:border-neutral-700">
-			`;
-			inv.inventory.forEach(item => {
-			  const invItem = inventory.find(i => i.id === item.id_item);
-			  html += `<li class="flex justify-between gap-4 items-center px-2 py-1">
-							<p class="w-full">${invItem ? invItem.item : 'Unknown'}<p>
-							<p class="w-[80px] flex-none">${item.price}</p>
-							<p class="w-[80px] flex-none">${item.qty}</p>
-					   </li>`;
-			});
-			html += `
-				</ul>
-				<div class="font-semibold flex justify-between gap-4 items-center px-2 py-1 border-b border-gray-200 dark:border-neutral-700">
-					<p class="w-full">Total</p>
-					<p class="w-[80px] flex-none">${inv.total}</p>
-				</div>
-			`;
-
-			modalContent.innerHTML = html;
-			modal.classList.remove('hidden');
+		function renderOptions(filter = '') {
+		  const filtered = invoices.filter((inv) => {
+			const cust = customers.find(c => String(c.id) === String(inv.id_customer));
+			const text = `${cust ? cust.name : 'Unknown'} (${inv.invoice})`.toLowerCase();
+			return text.includes(filter.toLowerCase());
 		  });
 
-		  closeModal.addEventListener('click', () => {
-			modal.classList.add('hidden');
-			invoiceSelect.value = '';
+		  if (filtered.length === 0) {
+			optionsList.innerHTML = '<li class="p-2 text-gray-500 cursor-default select-none">No invoices found</li>';
+			return;
+		  }
+
+		  optionsList.innerHTML = filtered
+			.map(inv => {
+			  const cust = customers.find(c => String(c.id) === String(inv.id_customer));
+			  return `<li tabindex="0" class="px-4 py-2 hover:bg-green-100 dark:hover:bg-green-800 cursor-pointer" data-invoice="${inv.invoice}">
+				${cust ? cust.name : 'Unknown'} (${inv.invoice})
+			  </li>`;
+			})
+			.join('');
+		}
+
+		function toggleDropdown() {
+		  if (dropdown.classList.contains('hidden')) {
+			dropdown.classList.remove('hidden');
+			searchInput.focus();
+			renderOptions('');
+			searchInput.value = '';
+		  } else {
+			dropdown.classList.add('hidden');
+		  }
+		}
+
+		function showInvoiceModal(invoiceNumber) {
+		  const inv = invoices.find(i => i.invoice === invoiceNumber);
+		  if (!inv) return;
+
+		  const cust = customers.find(c => String(c.id) === String(inv.id_customer));
+
+		  let html = `
+		  <div class="flex flex-col gap-2 w-full justify-center items-center mb-4 border-b border-gray-200 dark:border-neutral-700">
+			<img class="h-20 w-20 object-cover mx-auto" src="/assets/images/logo.png" alt="logo" />
+			<div class="w-full text-center">
+			  <h2 class="text-3xl font-bold">M-WA</h2>
+			  <div class="font-semibold w-full flex justify-between gap-4 items-center mt-4">
+				<p>${inv.invoice}</p>
+				<p>${inv.date}</p>
+			  </div>
+			</div>
+		  </div>
+		  <div class="grid grid-cols-1 gap-4">
+			<div>
+			  <p class="font-semibold">Customer:</p>
+			  <p class="text-xs">${cust ? cust.name : '<span class="text-red-600">Data customer tidak ditemukan</span>'}</p>
+			  <p class="text-xs">${cust ? cust.phone : '-'}</p>
+			  <p class="text-xs">${cust && cust.address ? cust.address : '-'}</p>
+			  <p class="text-xs">${cust ? cust.city : '-'}</p>
+			  <p class="text-xs">${cust ? cust.state : '-'}, ${cust ? cust.code_pos : '-'}</p>
+			</div>
+		  </div>
+		  <div class="font-semibold mt-4 flex justify-between gap-4 items-center p-2 bg-gray-100 dark:bg-neutral-900">
+			<p class="w-full">Items</p>
+			<p class="w-[80px] flex-none">Price</p>
+			<p class="w-[80px] flex-none">QTY</p>
+		  </div>
+		  <ul class="text-xs flex flex-col border-b border-gray-200 dark:border-neutral-700">
+		  `;
+
+		  inv.inventory.forEach(item => {
+			const invItem = inventory.find(i => i.id === item.id_item);
+			html += `<li class="flex justify-between gap-4 items-center px-2 py-1">
+					  <p class="w-full">${invItem ? invItem.item : 'Unknown'}</p>
+					  <p class="w-[80px] flex-none">${item.price}</p>
+					  <p class="w-[80px] flex-none">${item.qty}</p>
+					</li>`;
 		  });
 
-		  printBtn.addEventListener('click', () => {
-			const printContents = modalContent.innerHTML;
-			const originalContents = document.body.innerHTML;
+		  html += `
+			</ul>
+			<div class="font-semibold flex justify-between gap-4 items-center px-2 py-1 border-b border-gray-200 dark:border-neutral-700">
+			  <p class="w-full">Total</p>
+			  <p class="w-[80px] flex-none">${inv.total}</p>
+			</div>
+		  `;
 
-			document.body.innerHTML = printContents;
-			window.print();
-			document.body.innerHTML = originalContents;
+		  modalContent.innerHTML = html;
+		  modal.classList.remove('hidden');
+		}
 
-			location.reload();
-		  });
-		})();
+		selectedValue.addEventListener('click', () => {
+		  toggleDropdown();
+		});
+
+		searchInput.addEventListener('input', (e) => {
+		  renderOptions(e.target.value);
+		});
+
+		optionsList.addEventListener('click', (e) => {
+		  if (e.target.tagName.toLowerCase() === 'li' && e.target.dataset.invoice) {
+			selectedValue.textContent = e.target.textContent;
+			dropdown.classList.add('hidden');
+			showInvoiceModal(e.target.dataset.invoice);
+		  }
+		});
+
+		optionsList.addEventListener('keydown', (e) => {
+		  if (e.key === 'Enter' && e.target.dataset.invoice) {
+			selectedValue.textContent = e.target.textContent;
+			dropdown.classList.add('hidden');
+			showInvoiceModal(e.target.dataset.invoice);
+		  }
+		});
+
+		document.addEventListener('click', (e) => {
+		  if (!customSelect.contains(e.target)) {
+			dropdown.classList.add('hidden');
+		  }
+		});
+
+		closeModal.addEventListener('click', () => {
+		  modal.classList.add('hidden');
+		});
+
+	  })();
 	</script>
 </body>
 </html>

@@ -8,24 +8,26 @@ const vendorPath = path.join(configDir, 'vendor.json');
 const inventoryPath = path.join(configDir, 'inventory.json');
 const customerPath = path.join(configDir, 'customer.json');
 const invoicePath = path.join(configDir, 'invoice.json');
+const addStockRecordPath = path.join(configDir, 'add-stock-record.json');
+const writeOffStockRecordPath = path.join(configDir, 'write-off-stock-record.json');
 
 const filePaths = {
   vendor: vendorPath,
   inventory: inventoryPath,
   customer: customerPath,
-  invoice: invoicePath
+  invoice: invoicePath,
+  addStockRecord: addStockRecordPath,
+  writeOffStockRecord: writeOffStockRecordPath
 };
 
 const ensureFilesExist = () => {
   if (!fs.existsSync(configDir)) {
     fs.mkdirSync(configDir, { recursive: true });
-    console.log(`Directory created: ${configDir}`);
   }
 
   Object.entries(filePaths).forEach(([name, file]) => {
     if (!fs.existsSync(file)) {
       fs.writeFileSync(file, '[]', 'utf-8');
-      console.log(`Generated empty file: ${name}.json`);
     }
   });
 };
@@ -449,7 +451,7 @@ function deleteInventory(id) {
   }
 }
 
-function addStockInventory(id, additionalStock) {
+function addStockInventory(id, additionalStock, desc = '', date = null) {
   if (!fs.existsSync(inventoryPath)) return null;
 
   let inventorys;
@@ -467,12 +469,38 @@ function addStockInventory(id, additionalStock) {
   if (isNaN(addedStock)) return null;
 
   inventorys[index].stock = currentStock + addedStock;
-
   fs.writeFileSync(inventoryPath, JSON.stringify(inventorys, null, 2));
+
+  if (!fs.existsSync(addStockRecordPath)) {
+    fs.writeFileSync(addStockRecordPath, '[]');
+  }
+
+  let stockRecords;
+  try {
+    stockRecords = JSON.parse(fs.readFileSync(addStockRecordPath, 'utf8'));
+  } catch {
+    stockRecords = [];
+  }
+
+  const newId = stockRecords.reduce((max, curr) => Math.max(max, curr.id || 0), 0) + 1;
+
+  const recordDate = date ? date : new Date().toISOString().split('T')[0];
+
+  const newRecord = {
+    id: newId,
+    item_id: parseInt(id),
+    stock: addedStock,
+    desc: desc,
+    date: recordDate
+  };
+
+  stockRecords.push(newRecord);
+  fs.writeFileSync(addStockRecordPath, JSON.stringify(stockRecords, null, 2));
+
   return inventorys[index];
 }
 
-function writeOffStockInventory(id, writeOffAmount) {
+function writeOffStockInventory(id, writeOffAmount, desc = '', date = null) {
   if (!fs.existsSync(inventoryPath)) return null;
 
   let inventorys;
@@ -488,12 +516,36 @@ function writeOffStockInventory(id, writeOffAmount) {
   const currentStock = parseInt(inventorys[index].stock || 0);
   const reduceAmount = parseInt(writeOffAmount);
   if (isNaN(reduceAmount) || reduceAmount < 1) return null;
-
   if (reduceAmount > currentStock) return null;
 
   inventorys[index].stock = currentStock - reduceAmount;
-
   fs.writeFileSync(inventoryPath, JSON.stringify(inventorys, null, 2));
+
+  if (!fs.existsSync(writeOffStockRecordPath)) {
+    fs.writeFileSync(writeOffStockRecordPath, '[]');
+  }
+
+  let writeOffRecords;
+  try {
+    writeOffRecords = JSON.parse(fs.readFileSync(writeOffStockRecordPath, 'utf8'));
+  } catch {
+    writeOffRecords = [];
+  }
+
+  const newId = writeOffRecords.reduce((max, curr) => Math.max(max, curr.id || 0), 0) + 1;
+  const recordDate = date ? date : new Date().toISOString().split('T')[0];
+
+  const newRecord = {
+    id: newId,
+    item_id: parseInt(id),
+    stock: reduceAmount,
+    desc: desc,
+    date: recordDate
+  };
+
+  writeOffRecords.push(newRecord);
+  fs.writeFileSync(writeOffStockRecordPath, JSON.stringify(writeOffRecords, null, 2));
+
   return inventorys[index];
 }
 
@@ -666,90 +718,117 @@ function report(res, darkMode) {
         fs.readFile(vendorPath, 'utf-8', (err, vendorData) => {
           if (err) return res.status(500).send('Failed to read vendor.json');
 
-          let invoices = [];
-          let inventory = [];
-          let customers = [];
-          let vendors = [];
+          fs.readFile(addStockRecordPath, 'utf-8', (err, addStockData) => {
+            if (err) return res.status(500).send('Failed to read add-stock-record.json');
 
-          try {
-            invoices = JSON.parse(invoiceData);
-            inventory = JSON.parse(inventoryData);
-            customers = JSON.parse(customerData);
-            vendors = JSON.parse(vendorData);
-          } catch {
-            return res.status(500).send('Invalid JSON');
-          }
+            fs.readFile(writeOffStockRecordPath, 'utf-8', (err, writeOffStockData) => {
+              if (err) return res.status(500).send('Failed to read write-off-stock-record.json');
 
-          const inventoryMap = new Map(inventory.map(item => [item.id, item]));
-          const customerMap = new Map(customers.map(c => [Number(c.id), c]));
+              let invoices = [];
+              let inventory = [];
+              let customers = [];
+              let vendors = [];
+              let addStocks = [];
+              let writeOffStocks = [];
 
-          invoices = invoices.map(inv => {
-            let totalQty = 0;
-            let totalCOGS = 0;
-            let totalPrice = 0;
+              try {
+                invoices = JSON.parse(invoiceData);
+                inventory = JSON.parse(inventoryData);
+                customers = JSON.parse(customerData);
+                vendors = JSON.parse(vendorData);
+                addStocks = JSON.parse(addStockData);
+                writeOffStocks = JSON.parse(writeOffStockData);
+              } catch {
+                return res.status(500).send('Invalid JSON');
+              }
 
-            const enrichedItems = inv.inventory.map(i => {
-              const item = inventoryMap.get(i.id_item);
-              const qty = Number(i.qty) || 0;
-              const price = Number(item?.price || 0);
-              const cogs = Number(item?.cogs || 0);
+              const inventoryMap = new Map(inventory.map(item => [item.id, item]));
+              const customerMap = new Map(customers.map(c => [Number(c.id), c]));
+              const vendorMap = new Map(vendors.map(v => [v.id, v.vendor]));
 
-              totalQty += qty;
-              totalPrice += price * qty;
-              totalCOGS += cogs * qty;
+              invoices = invoices.map(inv => {
+                let totalQty = 0;
+                let totalCOGS = 0;
+                let totalPrice = 0;
 
-              return {
-                ...i,
-                item: item?.item || 'Unknown',
-                price,
-                cogs
-              };
+                const enrichedItems = inv.inventory.map(i => {
+                  const item = inventoryMap.get(i.id_item);
+                  const qty = Number(i.qty) || 0;
+                  const price = Number(item?.price || 0);
+                  const cogs = Number(item?.cogs || 0);
+                  const vendor = vendorMap.get(item?.vendor_id) || 'Unknown';
+
+                  totalQty += qty;
+                  totalPrice += price * qty;
+                  totalCOGS += cogs * qty;
+
+                  return {
+                    ...i,
+                    item: item?.item || 'Unknown',
+                    price,
+                    cogs,
+                    vendor
+                  };
+                });
+
+                const firstItem = enrichedItems[0];
+                const vendorName = firstItem?.vendor || 'Unknown';
+
+                return {
+                  ...inv,
+                  customer: customerMap.get(Number(inv.id_customer)) || { name: 'Unknown' },
+                  inventory: enrichedItems,
+                  itemCount: enrichedItems.length,
+                  totalQty,
+                  totalPrice,
+                  totalCOGS,
+                  profit: totalPrice - totalCOGS,
+                  vendor: vendorName
+                };
+              });
+
+              let totalItem = 0;
+              let totalQty = 0;
+              let totalCOGS = 0;
+              let totalPrice = 0;
+              let totalProfit = 0;
+
+              invoices.forEach(inv => {
+                totalItem += inv.itemCount;
+                totalQty += inv.totalQty;
+                totalCOGS += inv.totalCOGS;
+                totalPrice += inv.totalPrice;
+                totalProfit += inv.profit;
+              });
+
+              const totalInvoiceCount = invoices.length;
+              const totalInvoiceAmount = invoices.reduce((sum, inv) => sum + Number(inv.total || 0), 0);
+              const totalCustomers = customers.length;
+              const totalVendors = vendors.length;
+
+              addStocks.sort((a, b) => b.id - a.id);
+              writeOffStocks.sort((a, b) => b.id - a.id);
+
+              res.render('pos-report', {
+                darkMode,
+                title: 'Report | M-WA',
+                invoices,
+                totalItem,
+                totalQty,
+                totalCOGS,
+                totalPrice,
+                totalProfit,
+                totalInvoiceCount,
+                totalInvoiceAmount,
+                totalCustomers,
+                totalVendors,
+                addStocks,
+                writeOffStocks,
+                inventoryMap,
+			    customers,
+			    inventory
+              });
             });
-
-            return {
-              ...inv,
-              customer: customerMap.get(Number(inv.id_customer)) || { name: 'Unknown' },
-              inventory: enrichedItems,
-              itemCount: enrichedItems.length,
-              totalQty,
-              totalPrice,
-              totalCOGS,
-              profit: totalPrice - totalCOGS
-            };
-          });
-
-          let totalItem = 0;
-          let totalQty = 0;
-          let totalCOGS = 0;
-          let totalPrice = 0;
-          let totalProfit = 0;
-
-          invoices.forEach(inv => {
-            totalItem += inv.itemCount;
-            totalQty += inv.totalQty;
-            totalCOGS += inv.totalCOGS;
-            totalPrice += inv.totalPrice;
-            totalProfit += inv.profit;
-          });
-
-          const totalInvoiceCount = invoices.length;
-          const totalInvoiceAmount = invoices.reduce((sum, inv) => sum + Number(inv.total || 0), 0);
-          const totalCustomers = customers.length;
-          const totalVendors = vendors.length;
-
-          res.render('pos-report', {
-            darkMode,
-            title: 'Report | M-WA',
-            invoices,
-            totalItem,
-            totalQty,
-            totalCOGS,
-            totalPrice,
-            totalProfit,
-            totalInvoiceCount,
-            totalInvoiceAmount,
-            totalCustomers,
-            totalVendors
           });
         });
       });
