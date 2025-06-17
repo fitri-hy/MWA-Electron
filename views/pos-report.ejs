@@ -74,40 +74,34 @@
 							<tr>
 								<th class="text-left px-4 py-2 whitespace-nowrap">Invoice</th>
 								<th class="text-left px-4 py-2 whitespace-nowrap">Date</th>
-								<th class="text-center px-4 py-2 whitespace-nowrap">Item | QTY</th>
-								<th class="text-left px-4 py-2 whitespace-nowrap">COGS | Price</th>
+								<th class="text-center px-4 py-2 whitespace-nowrap">Item</th>
+								<th class="text-center px-4 py-2 whitespace-nowrap">QTY</th>
+								<th class="text-left px-4 py-2 whitespace-nowrap">COGS</th>
+								<th class="text-left px-4 py-2 whitespace-nowrap">Price</th>
 								<th class="text-left px-4 py-2 whitespace-nowrap">Profit</th>
 								<th class="text-center px-4 py-2 whitespace-nowrap">Actions</th>
 							</tr>
 						</thead>
 						<tbody>
 							<tr class="font-semibold bg-gray-100 dark:bg-neutral-800">
-								<td colspan="2" class="p-2">
-									Total
-								</td>
-								<td class="p-2 text-center whitespace-nowrap">
-									<%= totalItem %> | <%= totalQty %>
-								</td>
-								<td class="p-2 whitespace-nowrap">
-									<%= Number(totalCOGS).toLocaleString() %> | <%= Number(totalPrice).toLocaleString() %>
-								</td>
-								<td class="p-2 whitespace-nowrap">
-									<%= Number(totalProfit).toLocaleString() %>
-								</td>
+								<td colspan="2" class="p-2 w-full">Total</td>
+								<td class="p-2 text-center whitespace-nowrap"><%= totalItem %></td>
+								<td class="p-2 text-center whitespace-nowrap"><%= totalQty %></td>
+								<td class="p-2 whitespace-nowrap text-right"><%= Number(totalCOGS).toLocaleString() %></td>
+								<td class="p-2 whitespace-nowrap text-right"><%= Number(totalPrice).toLocaleString() %></td>
+								<td class="p-2 whitespace-nowrap text-right"><%= Number(totalProfit).toLocaleString() %></td>
 								<td class="p-2 whitespace-nowrap">
 								</td>
 							</tr>
 							<% invoices.forEach(inv => { %>
 								<tr class="border-b border-gray-200 dark:border-neutral-700">
 									<td class="text-left p-2 whitespace-nowrap"><%= inv.invoice %></td>
-									<td class="p-2 text-center whitespace-nowrap"><%= inv.date %></td>
-									<td class="p-2 text-center whitespace-nowrap"><%= inv.itemCount %> | <%= inv.totalQty %></td>
-									<td class="p-2 whitespace-nowrap">
-										<%= Number(inv.totalCOGS).toLocaleString() %> | <%= Number(inv.totalPrice).toLocaleString() %>
-									</td>
-									<td class="p-2 whitespace-nowrap">
-										<%= Number(inv.profit).toLocaleString() %>
-									</td>
+									<td class="p-2 text-left whitespace-nowrap"><%= inv.date %></td>
+									<td class="p-2 text-center whitespace-nowrap"><%= inv.itemCount %></td>
+									<td class="p-2 text-center whitespace-nowrap"><%= inv.totalQty %></td>
+									<td class="p-2 whitespace-nowrap text-right"><%= Number(inv.totalCOGS).toLocaleString() %></td>
+									<td class="p-2 whitespace-nowrap text-right"><%= Number(inv.totalPrice).toLocaleString() %></td>
+									<td class="p-2 whitespace-nowrap text-right"><%= Number(inv.profit).toLocaleString() %></td>
 									<td class="text-center px-4 py-2">
 										<div class="flex items-center justify-center gap-1">
 											<form action="/pos/report/delete-invoice" method="POST" onsubmit="return confirm('Are you sure you want to delete this data?');">
@@ -142,8 +136,8 @@
 						  %>
 						  <tr class="border-b border-gray-200 dark:border-neutral-700">
 							<td class="p-2 w-full whitespace-nowrap"><%= item ? item.item : 'Unknown' %></td>
-							<td class="p-2 text-center text-green-500">+<%= stock.stock %></td>
-							<td class="p-2"><%= stock.date %></td>
+							<td class="p-2 text-center text-green-500 whitespace-nowrap">+<%= stock.stock %></td>
+							<td class="p-2 whitespace-nowrap"><%= stock.date %></td>
 							<td class="p-2 text-center">
 							  <button onclick="toggleRow('add-<%= stock.id %>')" class="text-blue-500 text-sm">
 								<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="m19 9l-7 6l-7-6"/></svg>
@@ -177,8 +171,8 @@
 						  %>
 						  <tr class="border-b border-gray-200 dark:border-neutral-800">
 							<td class="p-2 w-full whitespace-nowrap"><%= item ? item.item : 'Unknown' %></td>
-							<td class="p-2 text-center text-rose-500">-<%= stock.stock %></td>
-							<td class="p-2"><%= stock.date %></td>
+							<td class="p-2 text-center text-rose-500 whitespace-nowrap">-<%= stock.stock %></td>
+							<td class="p-2 whitespace-nowrap"><%= stock.date %></td>
 							<td class="p-2 text-center">
 							  <button onclick="toggleRow('writeoff-<%= stock.id %>')" class="text-blue-500 text-sm">
 									<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="m19 9l-7 6l-7-6"/></svg>
@@ -224,16 +218,16 @@
 					  <tbody>
 						<% vendorInvoices.forEach(inv => { %>
 						  <tr class="border-b border-gray-200 dark:border-neutral-700">
-							<td class="p-2"><%= inv.invoice %></td>
-							<td class="p-2"><%= inv.date %></td>
-							<td class="p-2 text-right"><%= inv.totalQty %></td>
-							<td class="p-2 text-right">Rp <%= inv.totalPrice.toLocaleString() %></td>
+							<td class="p-2 text-left whitespace-nowrap"><%= inv.invoice %></td>
+							<td class="p-2 text-left whitespace-nowrap"><%= inv.date %></td>
+							<td class="p-2 text-center whitespace-nowrap"><%= inv.totalQty %></td>
+							<td class="p-2 text-right whitespace-nowrap"><%= inv.totalPrice.toLocaleString() %></td>
 						  </tr>
 						<% }); %>
 						<tr class="font-semibold bg-gray-50 dark:bg-neutral-800">
-						  <td class="p-2 text-left" colspan="2">Total</td>
-						  <td class="p-2 text-right"><%= totalQtyVendor %></td>
-						  <td class="p-2 text-right">Rp <%= totalPriceVendor.toLocaleString() %></td>
+						  <td class="p-2 text-left whitespace-nowrap" colspan="2">Total</td>
+						  <td class="p-2 text-center whitespace-nowrap"><%= totalQtyVendor %></td>
+						  <td class="p-2 text-right whitespace-nowrap"><%= totalPriceVendor.toLocaleString() %></td>
 						</tr>
 					  </tbody>
 					</table>
@@ -391,7 +385,7 @@
 		  <div class="font-semibold mt-4 flex justify-between gap-4 items-center p-2 bg-gray-100 dark:bg-neutral-900">
 			<p class="w-full">Items</p>
 			<p class="w-[80px] flex-none">Price</p>
-			<p class="w-[80px] flex-none">QTY</p>
+			<p class="w-[80px] flex-none text-center">QTY</p>
 		  </div>
 		  <ul class="text-xs flex flex-col border-b border-gray-200 dark:border-neutral-700">
 		  `;
@@ -400,8 +394,8 @@
 			const invItem = inventory.find(i => i.id === item.id_item);
 			html += `<li class="flex justify-between gap-4 items-center px-2 py-1">
 					  <p class="w-full">${invItem ? invItem.item : 'Unknown'}</p>
-					  <p class="w-[80px] flex-none">${item.price}</p>
-					  <p class="w-[80px] flex-none">${item.qty}</p>
+					  <p class="w-[80px] flex-none">${Number(item.price).toLocaleString()}</p>
+					  <p class="w-[80px] flex-none text-center">${item.qty}</p>
 					</li>`;
 		  });
 
@@ -409,7 +403,7 @@
 			</ul>
 			<div class="font-semibold flex justify-between gap-4 items-center px-2 py-1 border-b border-gray-200 dark:border-neutral-700">
 			  <p class="w-full">Total</p>
-			  <p class="w-[80px] flex-none">${inv.total}</p>
+			  <p class="w-[80px] flex-none text-right">${Number(inv.total).toLocaleString()}</p>
 			</div>
 		  `;
 

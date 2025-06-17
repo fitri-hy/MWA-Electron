@@ -207,14 +207,12 @@
 					data-price="${selectedItem.price}" 
 					data-stock="${selectedItem.stock}">
 				</td>
-				<td class="text-left px-4 py-2 min-w-[100px] whitespace-nowrap">
+				<td class="text-left px-4 py-2 min-w-[100px] whitespace-nowrap text-right">
 					${selectedItem.price}
 				</td>
 				<td class="w-[48px] text-center">
 					<button class="delete-btn text-rose-500 p-2 dark:text-rose-700">
-					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-						<path fill="currentColor" fill-rule="evenodd" d="...svg-path..." clip-rule="evenodd"/>
-					</svg>
+					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M22 12c0 5.523-4.477 10-10 10S2 17.523 2 12S6.477 2 12 2s10 4.477 10 10M8.97 8.97a.75.75 0 0 1 1.06 0L12 10.94l1.97-1.97a.75.75 0 0 1 1.06 1.06L13.06 12l1.97 1.97a.75.75 0 0 1-1.06 1.06L12 13.06l-1.97 1.97a.75.75 0 0 1-1.06-1.06L10.94 12l-1.97-1.97a.75.75 0 0 1 0-1.06" clip-rule="evenodd"/></svg>
 					</button>
 				</td>
 			`;
@@ -511,7 +509,7 @@
 		  <div class="font-semibold mt-4 flex justify-between gap-4 items-center p-2 bg-gray-100 dark:bg-neutral-900">
 			<p class="w-full">Items</p>
 			<p class="w-[80px] flex-none">Price</p>
-			<p class="w-[80px] flex-none">QTY</p>
+			<p class="w-[80px] flex-none text-center">QTY</p>
 		  </div>
 		  <ul class="text-xs flex flex-col border-b border-gray-200 dark:border-neutral-700">
 		  `;
@@ -520,8 +518,8 @@
 			const invItem = inventory.find(i => i.id === item.id_item);
 			html += `<li class="flex justify-between gap-4 items-center px-2 py-1">
 					  <p class="w-full">${invItem ? invItem.item : 'Unknown'}</p>
-					  <p class="w-[80px] flex-none">${item.price}</p>
-					  <p class="w-[80px] flex-none">${item.qty}</p>
+					  <p class="w-[80px] flex-none">${Number(item.price).toLocaleString()}</p>
+					  <p class="w-[80px] flex-none text-center">${item.qty}</p>
 					</li>`;
 		  });
 
@@ -529,7 +527,7 @@
 			</ul>
 			<div class="font-semibold flex justify-between gap-4 items-center px-2 py-1 border-b border-gray-200 dark:border-neutral-700">
 			  <p class="w-full">Total</p>
-			  <p class="w-[80px] flex-none">${inv.total}</p>
+			  <p class="w-[80px] flex-none text-right">${Number(inv.total).toLocaleString()}</p>
 			</div>
 		  `;
 
