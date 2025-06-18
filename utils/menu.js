@@ -12,6 +12,7 @@ const { createSettingWindow } = require('./settingWindow');
 const { createAIWindow } = require('./aiWindow');
 const { createNotesWindow } = require('./notesWindow');
 const { createPosWindow } = require('./posWindow');
+const { createDocsWindow } = require('./docsWindow');
 
 const homeDir = os.homedir();
 const configDir = path.join(homeDir, '.config', 'M-WA');
@@ -130,7 +131,7 @@ function menuApp(win, tabsFilePath, tabsData) {
       label: 'File',
       submenu: [
         {
-          label: 'Clear All Data',
+          label: 'Clear Tabs',
           click: async () => {
             const result = await dialog.showMessageBox({
               type: 'warning',
@@ -145,6 +146,9 @@ function menuApp(win, tabsFilePath, tabsData) {
               clearAllData(tabsFilePath, tabsData);
             }
           },
+        },
+        {
+          type: 'separator',
         },
 		{
           label: 'Theme',
@@ -162,6 +166,47 @@ function menuApp(win, tabsFilePath, tabsData) {
 //          label: 'Developer Tools',
 //          click: () => win.webContents.toggleDevTools(),
 //        },
+        {
+          type: 'separator',
+        },
+		{
+		  label: 'Backup',
+		  click: () => {
+			backupPosFolder();
+		  },
+		},
+		{
+		  label: 'Restore',
+		  click: () => {
+			restorePosFolder(win);
+		  },
+		},
+        {
+          type: 'separator',
+        },
+		{
+		  label: 'Setting',
+		  click: () => {
+			createSettingWindow();
+		  },
+		},
+        { label: 'Exit', click: () => app.quit() },
+      ],
+    },
+	
+	{
+      label: 'Help',
+      submenu: [
+		{
+		  label: 'Check Updates',
+		  click: () => checkForUpdates(win),
+		},
+		{
+		  label: 'Documentation',
+		  click: () => {
+            createDocsWindow();
+          },
+		},
 		{
 		  label: 'About',
 		  click: async () => {
@@ -178,31 +223,13 @@ function menuApp(win, tabsFilePath, tabsData) {
 			}
 		  }
 		},
+	  ],
+	},
+	
     {
-      label: 'Backup',
+      label: 'AI',
       click: () => {
-        backupPosFolder();
-      },
-    },
-    {
-      label: 'Restore',
-      click: () => {
-        restorePosFolder(win);
-      },
-    },
-		{
-		  label: 'Setting',
-		  click: () => {
-			createSettingWindow();
-		  },
-		},
-        { label: 'Exit', click: () => app.quit() },
-      ],
-    },
-    {
-      label: 'POS',
-      click: () => {
-        createPosWindow();
+        createAIWindow();
       },
     },
     {
@@ -218,21 +245,17 @@ function menuApp(win, tabsFilePath, tabsData) {
       },
     },
     {
+      label: 'POS',
+      click: () => {
+        createPosWindow();
+      },
+    },
+    {
       label: 'Notes',
       click: () => {
         createNotesWindow();
       },
     },
-    {
-      label: 'AI',
-      click: () => {
-        createAIWindow();
-      },
-    },
-	{
-	  label: 'Check Updates',
-	  click: () => checkForUpdates(win),
-	},
   ];
 }
 

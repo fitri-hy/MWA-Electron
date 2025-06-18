@@ -1,6 +1,6 @@
 {
   "name": "M-WA",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Whatsapp Web Multi Device. One Browser, Many Accounts",
   "main": "main.js",
   "author": "FhyLabs",
@@ -64,6 +64,7 @@
     "express-session": "^1.18.1",
     "fs-extra": "^11.3.0",
     "http": "^0.0.1-security",
+    "marked": "^15.0.12",
     "node-machine-id": "^1.1.12",
     "socket.io": "^4.8.1"
   }

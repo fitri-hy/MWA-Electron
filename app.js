@@ -5,6 +5,7 @@ const path = require('path');
 const os = require('os');
 const session = require('express-session');
 const flash = require('connect-flash');
+const marked = require('marked');
 const http = require('http');
 const socketIO = require('socket.io');
 const { ensureAutoRepliesFile, readAutoReplies, saveAutoReplies, ensureFirstMessageFile, readFirstMessage, saveFirstMessage, clearFirstTimeUsers } = require('./utils/autoReplyHelper');
@@ -743,6 +744,50 @@ app.get('/webhook/sessions', (req, res) => {
     console.error('Failed to take registration session:', err);
     res.status(500).json({ success: false, error: 'Failed to fetch session list' });
   }
+});
+
+app.get('/docs', (req, res) => {
+  const docsDir = path.join(__dirname, 'public', 'docs');
+  const filesToRead = [
+	'getStarter.md', 
+	'addingTabs.md', 
+	'connectAccount.md',
+	'integratingAI.md',
+	'createBot.md',
+	'autoReply.md',
+	'invoice.md',
+	'vendor.md',
+	'inventory.md',
+	'customer.md',
+	'report.md',
+	'notes.md',
+	'lockscreen.md',
+	'fullscreen.md',
+	'lightDark.md',
+	'reload.md',
+	'clearTab.md',
+	'backupRestore.md'
+  ];
+
+  Promise.all(
+    filesToRead.map(file => {
+      const fullPath = path.join(docsDir, file);
+      return fs.promises.readFile(fullPath, 'utf8')
+        .then(content => ({ [file.replace('.md', '')]: marked.parse(content) }))
+        .catch(err => ({ [file.replace('.md', '')]: `Error loading ${file}` }));
+    })
+  ).then(parsedFilesArray => {
+    const parsedFiles = Object.assign({}, ...parsedFilesArray);
+
+    res.render('docs', {
+      title: 'Documentation | M-WA',
+      darkMode,
+      ...parsedFiles
+    });
+  }).catch(err => {
+    console.error('Error reading markdown files:', err);
+    res.status(500).send('Failed to load documentation.');
+  });
 });
 
 initBotSocket(io);

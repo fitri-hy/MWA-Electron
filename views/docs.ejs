@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" class="<%= darkMode ? 'dark' : '' %>">
+<head>
+  <%- include('partials/head') %>
+</head>
+<body class="p-3 flex gap-3 h-screen w-full bg-gray-50 dark:bg-neutral-800 text-gray-700 dark:text-gray-200 text-sm">
+	
+	<div class="flex-none w-52 flex flex-col p-2 bg-white dark:bg-neutral-900 border border-gray-200/60 dark:border-neutral-700/60 overflow-y-auto rounded">
+		<div id="tab-list" class="space-y-1">
+			<button onclick="Tab('get-starter')" class="tab-btn px-2 py-1 border-l-4 border-gray-100 dark:border-neutral-900 hover:border-green-500 dark:hover:border-green-700 w-full text-left">
+				Get Starter
+			</button>
+			<button onclick="Tab('adding-tabs')" class="tab-btn px-2 py-1 border-l-4 border-gray-100 dark:border-neutral-900 hover:border-green-500 dark:hover:border-green-700 w-full text-left">
+				Adding Tabs
+			</button>
+			<button onclick="Tab('connect-account')" class="tab-btn px-2 py-1 border-l-4 border-gray-100 dark:border-neutral-900 hover:border-green-500 dark:hover:border-green-700 w-full text-left">
+				Connect Account
+			</button>
+			<button onclick="Tab('ai-integrating')" class="tab-btn px-2 py-1 border-l-4 border-gray-100 dark:border-neutral-900 hover:border-green-500 dark:hover:border-green-700 w-full text-left">
+				AI Integrating
+			</button>
+			<button onclick="Tab('create-bot')" class="tab-btn px-2 py-1 border-l-4 border-gray-100 dark:border-neutral-900 hover:border-green-500 dark:hover:border-green-700 w-full text-left">
+				Create Bot
+			</button>
+			<button onclick="Tab('auto-reply')" class="tab-btn px-2 py-1 border-l-4 border-gray-100 dark:border-neutral-900 hover:border-green-500 dark:hover:border-green-700 w-full text-left">
+				Auto Reply
+			</button>
+			<button onclick="Tab('invoice')" class="tab-btn px-2 py-1 border-l-4 border-gray-100 dark:border-neutral-900 hover:border-green-500 dark:hover:border-green-700 w-full text-left">
+				Invoice
+			</button>
+			<button onclick="Tab('vendor')" class="tab-btn px-2 py-1 border-l-4 border-gray-100 dark:border-neutral-900 hover:border-green-500 dark:hover:border-green-700 w-full text-left">
+				Vendor
+			</button>
+			<button onclick="Tab('inventory')" class="tab-btn px-2 py-1 border-l-4 border-gray-100 dark:border-neutral-900 hover:border-green-500 dark:hover:border-green-700 w-full text-left">
+				Inventory
+			</button>
+			<button onclick="Tab('customer')" class="tab-btn px-2 py-1 border-l-4 border-gray-100 dark:border-neutral-900 hover:border-green-500 dark:hover:border-green-700 w-full text-left">
+				Customer
+			</button>
+			<button onclick="Tab('report')" class="tab-btn px-2 py-1 border-l-4 border-gray-100 dark:border-neutral-900 hover:border-green-500 dark:hover:border-green-700 w-full text-left">
+				Report
+			</button>
+			<button onclick="Tab('notes')" class="tab-btn px-2 py-1 border-l-4 border-gray-100 dark:border-neutral-900 hover:border-green-500 dark:hover:border-green-700 w-full text-left">
+				Notes
+			</button>
+			<button onclick="Tab('lockscreen')" class="tab-btn px-2 py-1 border-l-4 border-gray-100 dark:border-neutral-900 hover:border-green-500 dark:hover:border-green-700 w-full text-left">
+				Lockscreen
+			</button>
+			<button onclick="Tab('fullscreen')" class="tab-btn px-2 py-1 border-l-4 border-gray-100 dark:border-neutral-900 hover:border-green-500 dark:hover:border-green-700 w-full text-left">
+				Fullscreen
+			</button>
+			<button onclick="Tab('light-dark')" class="tab-btn px-2 py-1 border-l-4 border-gray-100 dark:border-neutral-900 hover:border-green-500 dark:hover:border-green-700 w-full text-left">
+				Light & Dark Mode
+			</button>
+			<button onclick="Tab('reload')" class="tab-btn px-2 py-1 border-l-4 border-gray-100 dark:border-neutral-900 hover:border-green-500 dark:hover:border-green-700 w-full text-left">
+				Reload
+			</button>
+			<button onclick="Tab('clear-tabs')" class="tab-btn px-2 py-1 border-l-4 border-gray-100 dark:border-neutral-900 hover:border-green-500 dark:hover:border-green-700 w-full text-left">
+				Clear Tabs
+			</button>
+			<button onclick="Tab('backup-restore')" class="tab-btn px-2 py-1 border-l-4 border-gray-100 dark:border-neutral-900 hover:border-green-500 dark:hover:border-green-700 w-full text-left">
+				Backup & Restore
+			</button>
+		</div>
+	</div>
+	
+	<div class="w-full flex flex-col p-3 bg-white dark:bg-neutral-900 border border-gray-200/60 dark:border-neutral-700/60 overflow-y-auto rounded">
+		<div id="content-get-starter" class="prose dark:prose-invert max-w-none tab-content hidden">
+			<%- getStarter %>
+		</div>
+		<div id="content-adding-tabs" class="prose dark:prose-invert max-w-none tab-content hidden">
+			<%- addingTabs %>
+		</div>
+		<div id="content-connect-account" class="prose dark:prose-invert max-w-none tab-content hidden">
+			<%- connectAccount %>
+		</div>
+		<div id="content-ai-integrating" class="prose dark:prose-invert max-w-none tab-content hidden">
+			<%- integratingAI %>
+		</div>
+		<div id="content-create-bot" class="prose dark:prose-invert max-w-none tab-content hidden">
+			<%- createBot %>
+		</div>
+		<div id="content-auto-reply" class="prose dark:prose-invert max-w-none tab-content hidden">
+			<%- autoReply %>
+		</div>
+		<div id="content-invoice" class="prose dark:prose-invert max-w-none tab-content hidden">
+			<%- invoice %>
+		</div>
+		<div id="content-vendor" class="prose dark:prose-invert max-w-none tab-content hidden">
+			<%- vendor %>
+		</div>
+		<div id="content-inventory" class="prose dark:prose-invert max-w-none tab-content hidden">
+			<%- inventory %>
+		</div>
+		<div id="content-customer" class="prose dark:prose-invert max-w-none tab-content hidden">
+			<%- customer %>
+		</div>
+		<div id="content-report" class="prose dark:prose-invert max-w-none tab-content hidden">
+			<%- report %>
+		</div>
+		<div id="content-notes" class="prose dark:prose-invert max-w-none tab-content hidden">
+			<%- notes %>
+		</div>
+		<div id="content-lockscreen" class="prose dark:prose-invert max-w-none tab-content hidden">
+			<%- lockscreen %>
+		</div>
+		<div id="content-fullscreen" class="prose dark:prose-invert max-w-none tab-content hidden">
+			<%- fullscreen %>
+		</div>
+		<div id="content-light-dark" class="prose dark:prose-invert max-w-none tab-content hidden">
+			<%- lightDark %>
+		</div>
+		<div id="content-reload" class="prose dark:prose-invert max-w-none tab-content hidden">
+			<%- reload %>
+		</div>
+		<div id="content-clear-tabs" class="prose dark:prose-invert max-w-none tab-content hidden">
+			<%- clearTab %>
+		</div>
+		<div id="content-backup-restore" class="prose dark:prose-invert max-w-none tab-content hidden">
+			<%- backupRestore %>
+		</div>
+	</div>
+	
+    <% if (success_msg && success_msg.length > 0) { %>
+	  <div id="flash-message" class="fixed bottom-2 right-2 text-xs px-2 py-1 rounded bg-green-500 dark:bg-green-700 text-white font-semibold shadow-lg z-50">
+		<%= success_msg[0] %>
+	  </div>
+	<% } %>
+
+	<% if (error_msg && error_msg.length > 0) { %>
+	  <div id="flash-message" class="fixed bottom-2 right-2 text-xs px-2 py-1 rounded bg-rose-500 dark:bg-rose-700 text-white font-semibold shadow-lg z-50">
+		<%= error_msg[0] %>
+	  </div>
+	<% } %>
+	
+	<script src="/assets/js/electronAPIDocs.js"></script>
+	<script>
+	  function Tab(tabName) {
+		document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+
+		const content = document.getElementById(`content-${tabName}`);
+		if (content) content.classList.remove('hidden');
+
+		document.querySelectorAll('.tab-btn').forEach(btn => {
+		  btn.classList.remove('border-green-500', 'dark:border-green-700');
+		  btn.classList.add('border-gray-100', 'dark:border-neutral-900');
+		});
+
+		const buttons = document.querySelectorAll('.tab-btn');
+		buttons.forEach(btn => {
+		  const btnName = btn.textContent.trim().toLowerCase().replace(/\s+/g, '-');
+		  if (btnName === tabName) {
+			btn.classList.remove('border-gray-100', 'dark:border-neutral-900');
+			btn.classList.add('border-green-500', 'dark:border-green-700');
+		  }
+		});
+	  }
+
+	  window.onload = () => {
+		Tab('get-starter');
+	  };
+	</script>
+</body>
+</html>

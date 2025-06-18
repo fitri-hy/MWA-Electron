@@ -177,6 +177,18 @@ async function loadTabs() {
   updateWebviewVisibility();
 }
 
+function saveTabs() {
+  if (window.electronAPI && window.electronAPI.saveTabs) {
+    window.electronAPI.saveTabs(tabs).then(result => {
+      if (!result) {
+        console.error('Gagal menyimpan tab.');
+      }
+    }).catch(err => {
+      console.error('Error saat menyimpan tab:', err);
+    });
+  }
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   loadTabs();
 
