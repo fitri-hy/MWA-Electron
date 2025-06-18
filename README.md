@@ -18,6 +18,11 @@
 * Lock Screen
 * More
 
+## Support Platform
+
+- [x] **Windows**
+- [x] **macOS**
+- [x] **Linux**
 
 
 ## 🧩 Notes
