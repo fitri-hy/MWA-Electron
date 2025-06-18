@@ -88,6 +88,7 @@
     "fs-extra": "^11.3.0",
     "http": "^0.0.1-security",
     "marked": "^15.0.12",
+    "multer": "^2.0.1",
     "node-machine-id": "^1.1.12",
     "socket.io": "^4.8.1"
   }

@@ -27,28 +27,41 @@ fs.watchFile(settingPath, { interval: 500 }, (curr, prev) => {
   if (curr.mtime.getTime() !== prev.mtime.getTime()) {
     const newKey = readApiKey();
     ai = new GoogleGenAI({ apiKey: newKey });
-    console.log('[INFO] API key updated:', newKey);
+    //console.log('[INFO] API key updated:', newKey);
   }
 });
 
 let conversationHistory = [];
+const MAX_HISTORY = 10;
 
-async function generateText(model, prompt) {
-  conversationHistory.push({ role: "user", parts: [{ text: prompt }] });
+async function generateText(model, newContents) {
+  
+  const recentHistory = conversationHistory.slice(-MAX_HISTORY);
+  const fullContents = [...recentHistory, ...newContents];
 
   const result = await ai.models.generateContent({
     model,
-    contents: conversationHistory,
+    contents: fullContents,
     config: {
       maxOutputTokens: 500,
       temperature: 0.3,
+      systemInstruction: "Respond briefly to each question.",
     },
   });
 
-  const reply = result.text.trim();
-  conversationHistory.push({ role: "model", parts: [{ text: reply }] });
+  const replyText = result.text.trim();
 
-  return reply;
+  newContents.forEach(content => {
+    conversationHistory.push(content);
+  });
+
+  conversationHistory.push({ role: "assistant", parts: [{ text: replyText }] });
+
+  if (conversationHistory.length > MAX_HISTORY * 2) {
+    conversationHistory = conversationHistory.slice(conversationHistory.length - MAX_HISTORY * 2);
+  }
+
+  return replyText;
 }
 
 module.exports = {

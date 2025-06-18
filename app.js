@@ -7,6 +7,7 @@ const session = require('express-session');
 const flash = require('connect-flash');
 const marked = require('marked');
 const http = require('http');
+const multer = require('multer');
 const socketIO = require('socket.io');
 const { ensureAutoRepliesFile, readAutoReplies, saveAutoReplies, ensureFirstMessageFile, readFirstMessage, saveFirstMessage, clearFirstTimeUsers } = require('./utils/autoReplyHelper');
 const { lockscreenMiddleware, lockscreenGet, lockscreenPost, settingData } = require('./utils/lockscreen');
@@ -23,6 +24,7 @@ const initBotSocket = require('./utils/bot/botSocket');
 const { sendMessageBySessionId, getSessions  } = require('./utils/bot/sessionManager');
 
 const app = express();
+const upload = multer({ storage: multer.memoryStorage() });
 const server = http.createServer(app);
 const io = socketIO(server);
 
@@ -347,19 +349,38 @@ app.get('/ai', (req, res) => {
   });
 });
 
-app.post('/ai/text', async (req, res) => {
-  const { prompt, model = 'gemini-2.0-flash' } = req.body;
+app.post('/ai/multimodal', upload.single('image'), async (req, res) => {
+  const prompt = req.body.prompt || '';
+  const imageFile = req.file;
 
-  if (!prompt) {
-    return res.status(400).json({ success: false, error: 'Prompt is required' });
+  if (!prompt && !imageFile) {
+    return res.status(400).json({ success: false, error: 'Prompt or image required' });
   }
 
   try {
-    const text = await generateText(model, prompt);
-    res.json({ success: true, text });
+    const contents = [];
+
+    if (prompt) {
+      contents.push({ role: "user", parts: [{ text: prompt }] });
+    }
+
+    if (imageFile) {
+      const base64Image = imageFile.buffer.toString('base64');
+      contents.push({
+        role: "user",
+        parts: [{
+          inlineData: {
+            mimeType: imageFile.mimetype,
+            data: base64Image
+          }
+        }]
+      });
+    }
+
+    const result = await generateText('gemini-1.5-flash', contents);
+    res.json({ success: true, text: result });
   } catch (err) {
-    //console.error('Error generateText:', err);
-    res.status(500).json({ success: false, error: err.message || 'Internal Server Error' });
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
