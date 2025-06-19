@@ -166,6 +166,33 @@ function menuApp(win, tabsFilePath, tabsData) {
           accelerator: process.platform === 'darwin' ? 'Cmd+R' : 'Ctrl+R',
 		  click: () => win.reload() 
 		},
+		{
+		  label: 'Screenshot',
+		  accelerator: process.platform === 'darwin' ? 'Cmd+Shift+S' : 'Ctrl+Shift+S',
+		  click: () => {
+			win.webContents.capturePage().then(image => {
+			  const filePath = dialog.showSaveDialogSync(win, {
+				title: 'Simpan Screenshot',
+				defaultPath: path.join(app.getPath('pictures'), 'screenshot.png'),
+				filters: [{ name: 'Images', extensions: ['png'] }]
+			  })
+
+			  if (filePath) {
+				fs.writeFile(filePath, image.toPNG(), err => {
+				  if (err) {
+					dialog.showErrorBox('Error', 'Failed to save screenshot')
+				  } else {
+					dialog.showMessageBox(win, {
+					  type: 'info',
+					  title: 'Success',
+					  message: 'Screenshot successfully saved in:\n' + filePath
+					})
+				  }
+				})
+			  }
+			})
+		  }
+		},
 //        {
 //          label: 'Developer Tools',
 //          click: () => win.webContents.toggleDevTools(),
