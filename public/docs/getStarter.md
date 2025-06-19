@@ -27,7 +27,7 @@ M-WA utilizes **Electron** technology that combines the capabilities of the web 
 - Multi Device for Bots
 - Auto-greeting for first message
 - Auto-reply from Bots
-- Gemini AI Integration
+- Gemini AI Integration (Conversation, Image Analysis, Creating Images)
 - Lock Screen
 - PDF Invoices
 - Send Invoices via WhatsApp
@@ -39,6 +39,7 @@ M-WA utilizes **Electron** technology that combines the capabilities of the web 
 - Reports
 - Data Backup and Restore
 - Notes Manager
+- Notification
 - And more
 
 ---

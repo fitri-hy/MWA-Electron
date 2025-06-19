@@ -11,7 +11,7 @@ const multer = require('multer');
 const socketIO = require('socket.io');
 const { ensureAutoRepliesFile, readAutoReplies, saveAutoReplies, ensureFirstMessageFile, readFirstMessage, saveFirstMessage, clearFirstTimeUsers } = require('./utils/autoReplyHelper');
 const { lockscreenMiddleware, lockscreenGet, lockscreenPost, settingData } = require('./utils/lockscreen');
-const { generateText } = require('./utils/gemini');
+const { generateText, generateImage } = require('./utils/gemini');
 const { getNotes, addNote, editNote, deleteNote } = require('./utils/notes');
 const { 
 	invoice, createInvoice, deleteInvoice,
@@ -251,7 +251,7 @@ app.get('/setting', (req, res) => {
   const geminiPath = path.join(configDir, 'gemini.json');
 
   let settings = { password: '', enabled: false };
-  let gemini = { apikey: '' };
+  let gemini = { apikey: '', MaxHistory: 10, instruction: 'Respond briefly to each question.' };
  
   try {
     if (fs.existsSync(settingPath)) {
@@ -259,7 +259,8 @@ app.get('/setting', (req, res) => {
     }
 
     if (fs.existsSync(geminiPath)) {
-      gemini = JSON.parse(fs.readFileSync(geminiPath, 'utf8'));
+      const data = JSON.parse(fs.readFileSync(geminiPath, 'utf8'));
+      gemini = { ...gemini, ...data };
     }
   } catch (err) {
     console.error('Error reading config files:', err);
@@ -270,6 +271,8 @@ app.get('/setting', (req, res) => {
     title: 'Setting | M-WA',
     enabled: settings.enabled,
 	apikey: gemini.apikey,
+    maxHistory: gemini.MaxHistory,
+    instruction: gemini.instruction,
     success_msg: req.flash('success_msg'),
     error_msg: req.flash('error_msg'),
   });
@@ -384,6 +387,28 @@ app.post('/ai/multimodal', upload.single('image'), async (req, res) => {
   }
 });
 
+app.post('/ai/text-to-image', async (req, res) => {
+  const prompt = req.body.prompt;
+
+  if (!prompt || !prompt.startsWith('/image ')) {
+    return res.status(400).json({ success: false, error: 'Prompt must start with /image' });
+  }
+
+  const textPrompt = prompt.replace('/image ', '');
+
+  try {
+    const { text, imageBase64 } = await generateImage(textPrompt);
+
+    res.json({
+      success: true,
+      text,
+      imageURL: `data:image/png;base64,${imageBase64}`,
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 app.post('/setting/gemini', (req, res) => {
   const homeDir = os.homedir();
   const configDir = path.join(homeDir, '.config', 'M-WA', 'setting');
@@ -393,17 +418,24 @@ app.post('/setting/gemini', (req, res) => {
     fs.mkdirSync(configDir, { recursive: true });
   }
 
-  let currentSetting = { apikey: '' };
+  let currentSetting = {
+    apikey: '',
+    MaxHistory: 10,
+    instruction: 'Respond briefly to each question.'
+  };
+
   if (fs.existsSync(settingPath)) {
     try {
       const raw = fs.readFileSync(settingPath, 'utf-8');
-      currentSetting = JSON.parse(raw);
+      currentSetting = { ...currentSetting, ...JSON.parse(raw) };
     } catch (err) {
       console.error('Failed to read existing settings:', err);
     }
   }
 
-  currentSetting.apikey = req.body.apikey;
+  currentSetting.apikey = req.body.apikey?.trim() || '';
+  currentSetting.MaxHistory = parseInt(req.body.MaxHistory) || 10;
+  currentSetting.instruction = req.body.instruction?.trim() || 'Respond briefly to each question.';
 
   fs.writeFile(settingPath, JSON.stringify(currentSetting, null, 2), (err) => {
     if (err) {
@@ -415,6 +447,7 @@ app.post('/setting/gemini', (req, res) => {
     res.redirect('/setting');
   });
 });
+
 
 app.get('/notes', (req, res) => {
   const q = req.query.q?.toLowerCase() || '';

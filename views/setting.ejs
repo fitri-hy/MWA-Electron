@@ -4,8 +4,8 @@
   <%- include('partials/head') %>
 </head>
 <body class="bg-gray-50 dark:bg-neutral-800 text-gray-700 dark:text-gray-200 text-sm">
-	<main class="p-3 grid grid-cols-1 md:grid-cols-2 gap-4">
-		<div class="flex flex-col gap-4 bg-white dark:bg-neutral-900 p-4 border border-gray-100 dark:border-neutral-700 rounded">
+	<main class="p-3 columns-1 md:columns-2 gap-4">
+		<div class="break-inside-avoid flex flex-col gap-4 bg-white dark:bg-neutral-900 p-4 border border-gray-100 dark:border-neutral-700 rounded">
 			<div class="w-full flex items-center justify-between gap-4 border-b border-gray-200 dark:border-neutral-700 pb-4">
 				<h2 class="text-xl font-semibold">
 					Lockscreen
@@ -25,7 +25,7 @@
 							New Password
 						</label>
 						<div class="relative">
-							<input id="newPassword" name="password" type="password" placeholder="***********" class="w-full px-4 py-2 rounded bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-green-400 dark:focus:border-green-800" />
+							<input id="newPassword" name="password" type="password" placeholder="***********" class="w-full p-3 rounded bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-green-400 dark:focus:border-green-800" />
 							<button type="button" onclick="togglePassword('newPassword')" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-500 dark:text-gray-300">
 								<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3.275 15.296C2.425 14.192 2 13.639 2 12c0-1.64.425-2.191 1.275-3.296C4.972 6.5 7.818 4 12 4s7.028 2.5 8.725 4.704C21.575 9.81 22 10.361 22 12c0 1.64-.425 2.191-1.275 3.296C19.028 17.5 16.182 20 12 20s-7.028-2.5-8.725-4.704Z"/><path d="M15 12a3 3 0 1 1-6 0a3 3 0 0 1 6 0Z"/></g></svg>
 							</button>
@@ -36,7 +36,7 @@
 							Confirm Password
 						</label>
 						<div class="relative">
-							<input id="confirmPassword" type="password" placeholder="***********" class="w-full px-4 py-2 rounded bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-green-400 dark:focus:border-green-800" />
+							<input id="confirmPassword" type="password" placeholder="***********" class="w-full p-3 rounded bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-green-400 dark:focus:border-green-800" />
 							<button type="button" onclick="togglePassword('confirmPassword')" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-500 dark:text-gray-300">
 								<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3.275 15.296C2.425 14.192 2 13.639 2 12c0-1.64.425-2.191 1.275-3.296C4.972 6.5 7.818 4 12 4s7.028 2.5 8.725 4.704C21.575 9.81 22 10.361 22 12c0 1.64-.425 2.191-1.275 3.296C19.028 17.5 16.182 20 12 20s-7.028-2.5-8.725-4.704Z"/><path d="M15 12a3 3 0 1 1-6 0a3 3 0 0 1 6 0Z"/></g></svg>
 							</button>
@@ -50,20 +50,39 @@
 				</div>
 			</form>
 		</div>
-		<div class="flex flex-col gap-4 bg-white dark:bg-neutral-900 p-4 border border-gray-100 dark:border-neutral-700 rounded">
+		<div class="break-inside-avoid flex flex-col gap-4 bg-white dark:bg-neutral-900 p-4 border border-gray-100 dark:border-neutral-700 rounded">
 			<div class="w-full flex items-center justify-between gap-4 border-b border-gray-200 dark:border-neutral-700 pb-4">
 				<h2 class="text-xl font-semibold">
 					Gemini AI
 				</h2>
 			</div>
 			<form action="/setting/gemini" method="POST" class="flex flex-col gap-4">
-				<div class="w-full flex gap-4">
+				<div class="w-full flex flex-col gap-4">
+					<div class="flex items-center gap-4">
 					<div class="w-full flex flex-col gap-1">
 						<label>
 							API Key
 						</label>
 						<div class="relative">
-							<input name="apikey" type="text" value="<%= apikey %>" placeholder="Enter Apikey" class="w-full px-4 py-2 rounded bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-green-400 dark:focus:border-green-800" />
+							<input name="apikey" type="text" value="<%= apikey %>" placeholder="Enter Apikey" class="w-full p-3 rounded bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-green-400 dark:focus:border-green-800" />
+						</div>
+					</div>
+					<div class="w-full flex flex-col gap-1 max-w-[80px]">
+						<label>
+							History
+						</label>
+						<div class="relative">
+							<input name="MaxHistory" type="number" value="<%= maxHistory %>" placeholder="Enter max history" class="w-full p-3 rounded bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-green-400 dark:focus:border-green-800" />
+						</div>
+					</div>
+					</div>
+					
+					<div class="w-full flex flex-col gap-1">
+						<label>
+							Instruction
+						</label>
+						<div class="relative">
+							<textarea name="instruction" placeholder="Enter instruction" class="w-full p-3 rounded bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-green-400 dark:focus:border-green-800" /><%= instruction %></textarea>
 						</div>
 					</div>
 				</div>

@@ -10,12 +10,16 @@
   </style>
 </head>
 <body class="min-h-screen h-full w-full bg-white dark:bg-neutral-800 text-gray-700 dark:text-gray-200">
-
-  <div id="chatContainer" class="prose max-w-none h-[calc(100vh-64px)] w-full flex flex-col overflow-y-auto p-4 space-y-2">
+  <header class="h-12 px-4 py-2 bg-green-500 dark:bg-green-500 flex justify-between items-center gap-4">
+	<div class="flex justify-between items-center">
+	  <h1 class="text-xl font-bold text-white">Gemini AI</h1>
+	</div>
+  </header>
+  <div id="chatContainer" class="prose max-w-none h-[calc(100vh-112px)] w-full flex flex-col overflow-y-auto p-4 space-y-2">
     <% chats.forEach(chat => { %>
       <% if(chat.from === 'ai') { %>
         <div class="flex flex-col justify-start">
-          <label>MWA-AI</label>
+          <label>Gemini</label>
           <div class="flex">
             <div class="bg-gray-100 dark:bg-neutral-900 rounded-xl rounded-tl-none max-w-[80%] px-4 py-3">
               <%= chat.text %>
@@ -44,7 +48,7 @@
     <label for="imageInput" class="cursor-pointer text-green-500 hover:text-green-600 dark:text-green-700 dark:hover:text-green-600">
       <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M22 12.698c-.002 1.47-.013 2.718-.096 3.743c-.097 1.19-.296 2.184-.74 3.009a4.2 4.2 0 0 1-.73.983c-.833.833-1.893 1.21-3.237 1.39C15.884 22 14.2 22 12.053 22h-.106c-2.148 0-3.83 0-5.144-.177c-1.343-.18-2.404-.557-3.236-1.39c-.738-.738-1.12-1.656-1.322-2.795c-.2-1.12-.236-2.512-.243-4.241Q1.999 12.737 2 12v-.054c0-2.148 0-3.83.177-5.144c.18-1.343.557-2.404 1.39-3.236s1.893-1.21 3.236-1.39c1.168-.157 2.67-.175 4.499-.177a.697.697 0 1 1 0 1.396c-1.855.002-3.234.018-4.313.163c-1.189.16-1.906.464-2.436.994S3.72 5.8 3.56 6.99C3.397 8.2 3.395 9.788 3.395 12v.784l.932-.814a2.14 2.14 0 0 1 2.922.097l3.99 3.99a1.86 1.86 0 0 0 2.385.207l.278-.195a2.79 2.79 0 0 1 3.471.209l2.633 2.37c.265-.557.423-1.288.507-2.32c.079-.972.09-2.152.091-3.63a.698.698 0 0 1 1.396 0"/><path fill="currentColor" fill-rule="evenodd" d="M17.5 11c-2.121 0-3.182 0-3.841-.659S13 8.621 13 6.5s0-3.182.659-3.841S15.379 2 17.5 2s3.182 0 3.841.659S22 4.379 22 6.5s0 3.182-.659 3.841S19.621 11 17.5 11m.75-6.5a.75.75 0 0 0-1.5 0v1.25H15.5a.75.75 0 0 0 0 1.5h1.25V8.5a.75.75 0 0 0 1.5 0V7.25h1.25a.75.75 0 0 0 0-1.5h-1.25z" clip-rule="evenodd"/></svg>
     </label>
-	<input id="chatInput" placeholder="Enter question ..." class="w-full px-4 py-3 rounded bg-white dark:bg-neutral-900 border border gray-200/60 dark:border-gray-700/60 focus:outline-none focus:border-green-500 dark:focus:border-green-700" autocomplete="off" />
+	<input id="chatInput" placeholder="Ask anything or type /image before the question to create an image." class="w-full px-4 py-3 rounded bg-white dark:bg-neutral-900 border border gray-200/60 dark:border-gray-700/60 focus:outline-none focus:border-green-500 dark:focus:border-green-700" autocomplete="off" />
 	<button id="sendBtn" class="p-3 rounded bg-green-500 dark:bg-green-700 hover:bg-green-600 dark:hover:bg-green-600 text-white hover:scale-105 hover:duration-300 transition-all" title="Send" aria-label="Send message">
       <svg id="sendIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
         <path fill="currentColor" d="M14.143 15.962a.5.5 0 0 1-.244.68l-9.402 4.193c-1.495.667-3.047-.814-2.306-2.202l3.152-5.904c.245-.459.245-1 0-1.458L2.191 5.367c-.74-1.388.81-2.87 2.306-2.202l3.525 1.572a2 2 0 0 1 .974.932z"/>
@@ -95,92 +99,109 @@
 	}
 
 	function appendChatBubble(from, text, imageURL = null) {
-	  const wrapper = document.createElement('div');
-	  wrapper.classList.add('flex', 'flex-col', from === 'ai' ? 'justify-start' : 'justify-end');
+      const wrapper = document.createElement('div');
+      wrapper.classList.add('flex', 'flex-col', from === 'ai' ? 'justify-start' : 'justify-end');
 
-	  const label = document.createElement('label');
-	  label.textContent = from === 'ai' ? 'MWA-AI' : 'You';
-	  label.classList.add('text-gray-700', 'dark:text-gray-200');
-	  if (from === 'user') label.classList.add('text-right');
-	  wrapper.appendChild(label);
+      const label = document.createElement('label');
+      label.textContent = from === 'ai' ? 'Gemini' : 'You';
+      if (from === 'user') label.classList.add('text-right');
+      wrapper.appendChild(label);
 
-	  const bubbleWrapper = document.createElement('div');
-	  bubbleWrapper.classList.add('flex');
-	  if (from === 'user') bubbleWrapper.classList.add('justify-end');
-	  wrapper.appendChild(bubbleWrapper);
+      const bubbleWrapper = document.createElement('div');
+      if (from === 'user') bubbleWrapper.classList.add('justify-end');
+      bubbleWrapper.classList.add('flex');
+      wrapper.appendChild(bubbleWrapper);
 
-	  const bubble = document.createElement('div');
-	  const aiClasses = 'bg-gray-100 dark:bg-neutral-900 rounded-xl rounded-tl-none max-w-[80%] px-4 py-1 prose prose-sm prose-neutral dark:prose-invert'.split(' ');
-	  const userClasses = 'bg-green-400 dark:bg-green-700 text-white rounded-xl rounded-tr-none max-w-[80%] px-4 py-1'.split(' ');
-	  bubble.classList.add(...(from === 'ai' ? aiClasses : userClasses));
+      const bubble = document.createElement('div');
+      const aiClasses = 'bg-gray-100 dark:bg-neutral-900 rounded-xl rounded-tl-none max-w-[80%] px-4 py-2 prose prose-sm dark:prose-invert'.split(' ');
+      const userClasses = 'bg-green-400 dark:bg-green-700 text-white rounded-xl rounded-tr-none max-w-[80%] px-4 py-2'.split(' ');
+      bubble.classList.add(...(from === 'ai' ? aiClasses : userClasses));
 
-	  if (from === 'ai') {
-		bubble.innerHTML = marked.parse(text);
-		highlightCodeBlocks(bubble);
-	  } else {
-		bubble.textContent = text;
+      if (from === 'ai') {
+        if (text) bubble.innerHTML = marked.parse(text);
+        if (imageURL) {
+          const img = document.createElement('img');
+          img.src = imageURL;
+          img.alt = 'Generated image';
+          img.classList.add('mt-2', 'rounded', 'w-full', 'max-w-xs', 'h-auto', 'object-contain');
+          bubble.appendChild(img);
+        }
+        highlightCodeBlocks(bubble);
+      } else {
+        bubble.textContent = text;
+        if (imageURL) {
+          const img = document.createElement('img');
+          img.src = imageURL;
+          img.alt = 'Uploaded image';
+          img.classList.add('mt-2', 'rounded', 'w-full', 'max-w-xs', 'h-auto', 'object-contain');
+          bubble.appendChild(img);
+        }
+      }
 
-		if (imageURL) {
-		  const img = document.createElement('img');
-		  img.src = imageURL;
-		  img.alt = 'Uploaded image';
-		  img.classList.add('mt-2', 'rounded', 'w-full', 'max-w-xs', 'h-auto', 'object-contain');
-		  bubble.appendChild(document.createElement('br'));
-		  bubble.appendChild(img);
-		}
-	  }
+      bubbleWrapper.appendChild(bubble);
+      chatContainer.appendChild(wrapper);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
 
-	  bubbleWrapper.appendChild(bubble);
-	  chatContainer.appendChild(wrapper);
-	  chatContainer.scrollTop = chatContainer.scrollHeight;
-	}
+    async function sendMessage() {
+      const prompt = chatInput.value.trim();
+      const imageFile = imageInput.files[0];
+      if (!prompt && !imageFile) return;
 
-	async function sendMessage() {
-	  const prompt = chatInput.value.trim();
-	  const imageFile = imageInput.files[0];
-	  if (!prompt && !imageFile) return;
+      const imageURL = imageFile ? URL.createObjectURL(imageFile) : null;
+      appendChatBubble('user', prompt || '[Image uploaded]', imageURL);
 
-	  const imageURL = imageFile ? URL.createObjectURL(imageFile) : null;
-	  appendChatBubble('user', prompt || '[Image uploaded]', imageURL);
+      chatInput.value = '';
+      imageInput.value = '';
+      imagePreview.src = '';
+      imagePreview.classList.add('hidden');
 
-	  chatInput.value = '';
-	  imageInput.value = '';
-	  
-	  imagePreview.src = '';
-	  imagePreview.classList.add('hidden');
-	  
-	  chatInput.disabled = true;
-	  imageInput.disabled = true;
-	  sendBtn.disabled = true;
-	  sendBtn.innerHTML = loadingSpinner;
+      chatInput.disabled = true;
+      imageInput.disabled = true;
+      sendBtn.disabled = true;
+      sendBtn.innerHTML = loadingSpinner;
 
-	  try {
-		const formData = new FormData();
-		formData.append('prompt', prompt);
-		if (imageFile) formData.append('image', imageFile);
+      try {
+        let response;
 
-		const response = await fetch('/ai/multimodal', {
-		  method: 'POST',
-		  body: formData
-		});
+        if (prompt.startsWith('/image ')) {
+          const body = new URLSearchParams();
+          body.append('prompt', prompt);
+          response = await fetch('/ai/text-to-image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body
+          });
+        } else {
+          const formData = new FormData();
+          formData.append('prompt', prompt);
+          if (imageFile) formData.append('image', imageFile);
+          response = await fetch('/ai/multimodal', {
+            method: 'POST',
+            body: formData
+          });
+        }
 
-		const data = await response.json();
-
-		if (data.success) {
-		  appendChatBubble('ai', data.text);
-		} else {
-		  appendChatBubble('ai', 'Error: ' + (data.error || 'Unknown error'));
-		}
-	  } catch (error) {
-		appendChatBubble('ai', 'Error: ' + error.message);
-	  } finally {
-		chatInput.disabled = false;
-		imageInput.disabled = false;
-		sendBtn.disabled = false;
-		sendBtn.innerHTML = originalSendIcon;
-		chatInput.focus();
-	  }
-	}
+        const data = await response.json();
+        if (data.success) {
+          if (data.imageURL) {
+            appendChatBubble('ai', data.text || '[Image generated]', data.imageURL);
+          } else {
+            appendChatBubble('ai', data.text);
+          }
+        } else {
+          appendChatBubble('ai', 'Error: ' + (data.error || 'Unknown error'));
+        }
+      } catch (error) {
+        appendChatBubble('ai', 'Error: ' + error.message);
+      } finally {
+        chatInput.disabled = false;
+        imageInput.disabled = false;
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = originalSendIcon;
+        chatInput.focus();
+      }
+    }
 
 	sendBtn.addEventListener('click', sendMessage);
 	chatInput.addEventListener('keydown', e => {
