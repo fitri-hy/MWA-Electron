@@ -159,9 +159,13 @@ function menuApp(win, tabsFilePath, tabsData) {
         },
 		{
           label: 'Fullscreen',
+          accelerator: process.platform === 'darwin' ? 'Cmd+Ctrl+F' : 'F11',
           click: () => win.setFullScreen(!win.isFullScreen()),
         },
-        { label: 'Reload', click: () => win.reload() },
+        { label: 'Reload', 
+          accelerator: process.platform === 'darwin' ? 'Cmd+R' : 'Ctrl+R',
+		  click: () => win.reload() 
+		},
 //        {
 //          label: 'Developer Tools',
 //          click: () => win.webContents.toggleDevTools(),
