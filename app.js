@@ -60,6 +60,10 @@ app.post('/lockscreen', (req, res) => {
 });
 
 app.get('/', (req, res) => {
+  const homeDir = os.homedir();
+  const inventoryPath = path.join(homeDir, '.config', 'M-WA', 'pos', 'inventory.json');
+  const notePath = path.join(homeDir, '.config', 'M-WA', 'notes', 'note.json');
+
   function readOrCreateEmptyArr(filePath) {
     if (!fs.existsSync(filePath)) {
       fs.writeFileSync(filePath, '[]', 'utf8');
@@ -73,10 +77,6 @@ app.get('/', (req, res) => {
       return [];
     }
   }
-
-  const homeDir = os.homedir();
-  const inventoryPath = path.join(homeDir, '.config', 'M-WA', 'pos', 'inventory.json');
-  const notePath = path.join(homeDir, '.config', 'M-WA', 'notes', 'note.json');
 
   const inventory = readOrCreateEmptyArr(inventoryPath);
   const notes = readOrCreateEmptyArr(notePath);
