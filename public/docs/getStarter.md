@@ -21,6 +21,7 @@ M-WA utilizes **Electron** technology that combines the capabilities of the web 
 ### Key Features
 
 - Multi-tab to open multiple WhatsApp accounts at once
+- Drag and drop tabs to change position
 - Sessions saved locally — no need to log in every time you open the app
 - Dark & ​​Light Mode
 - Bailey WhatsApp Bot Integration

@@ -53,10 +53,11 @@ function generateNewId() {
 function renderTabs() {
   tabsContainer.innerHTML = '';
 
-  tabs.forEach(tab => {
+  tabs.forEach((tab, index) => {
     const tabDiv = document.createElement('div');
     tabDiv.className = 'block border-b-2 flex items-center gap-2 p-1 hover:bg-gray-100 dark:hover:bg-neutral-900 cursor-pointer';
     tabDiv.dataset.tabId = tab.id;
+    tabDiv.draggable = true;
     if (tab.id === activeTabId) {
       tabDiv.classList.add('border-green-500');
       tabDiv.classList.remove('border-gray-300');
@@ -84,6 +85,29 @@ function renderTabs() {
     tabDiv.appendChild(titleSpan);
     tabDiv.appendChild(closeBtn);
     tabsContainer.appendChild(tabDiv);
+
+    tabDiv.addEventListener('dragstart', (e) => {
+      e.dataTransfer.setData('text/plain', index);
+      e.dataTransfer.effectAllowed = 'move';
+    });
+
+    tabDiv.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+    });
+
+    tabDiv.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const draggedIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
+      const targetIndex = index;
+      if (draggedIndex === targetIndex) return;
+
+      const movedTab = tabs.splice(draggedIndex, 1)[0];
+      tabs.splice(targetIndex, 0, movedTab);
+
+      renderTabs();
+      saveTabs();
+    });
 
     tabDiv.addEventListener('click', e => {
       if (e.target === closeBtn || closeBtn.contains(e.target)) return;
@@ -116,7 +140,6 @@ function renderTabs() {
       updateWebviewVisibility();
       saveTabs();
     });
-
   });
 }
 
@@ -249,3 +272,14 @@ window.electronAPI.onOnlineStatusChange((isOnline) => {
 if (!navigator.onLine) {
   mwaShowModal('Internet is not connected. Please check your connection.', 'red', false);
 }
+
+window.addEventListener('keydown', (e) => {
+  if (e.ctrlKey && e.key === 'Tab') {
+    e.preventDefault();
+    const currentIndex = tabs.findIndex(tab => tab.id === activeTabId);
+    const nextIndex = (currentIndex + 1) % tabs.length;
+    activeTabId = tabs[nextIndex].id;
+    renderTabs();
+    updateWebviewVisibility();
+  }
+});

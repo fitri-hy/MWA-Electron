@@ -184,15 +184,42 @@
 
         const data = await response.json();
         if (data.success) {
-          if (data.imageURL) {
-            appendChatBubble('ai', data.text || '[Image generated]', data.imageURL);
-          } else {
-            appendChatBubble('ai', data.text);
-          }
-        } else {
-          appendChatBubble('ai', 'Error: ' + (data.error || 'Unknown error'));
-        }
-      } catch (error) {
+		  if (data.imageURL) {
+			appendChatBubble('ai', data.text || '[Image generated]', data.imageURL);
+		  } else {
+			appendChatBubble('ai', data.text);
+		  }
+		} else {
+		  let errorMessage = 'Unknown error';
+
+		  if (data.error) {
+			if (typeof data.error === 'object' && data.error.status === 'PERMISSION_DENIED') {
+			  errorMessage = 'Please use API Key or other form of API consumer identity to call this API.';
+			} else if (typeof data.error === 'string') {
+			  try {
+				const parsedError = JSON.parse(data.error);
+				if (parsedError.error && parsedError.error.status === 'PERMISSION_DENIED') {
+				  errorMessage = 'Please use API Key or other form of API consumer identity to call this API.';
+				} else if (parsedError.error && parsedError.error.message) {
+				  errorMessage = parsedError.error.message;
+				} else {
+				  errorMessage = data.error;
+				}
+			  } catch {
+				if (data.error.includes('PERMISSION_DENIED')) {
+				  errorMessage = 'Please use API Key or other form of API consumer identity to call this API.';
+				} else {
+				  errorMessage = data.error;
+				}
+			  }
+			} else if (typeof data.error === 'object' && data.error.message) {
+			  errorMessage = data.error.message;
+			}
+		  }
+
+		  appendChatBubble('ai', errorMessage);
+		}
+	  } catch (error) {
         appendChatBubble('ai', 'Error: ' + error.message);
       } finally {
         chatInput.disabled = false;
