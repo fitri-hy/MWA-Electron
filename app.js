@@ -64,7 +64,16 @@ app.get('/', (req, res) => {
   const inventoryPath = path.join(homeDir, '.config', 'M-WA', 'pos', 'inventory.json');
   const notePath = path.join(homeDir, '.config', 'M-WA', 'notes', 'note.json');
 
+  function ensureDirExist(filePath) {
+    const dir = path.dirname(filePath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+  }
+
   function readOrCreateEmptyArr(filePath) {
+    ensureDirExist(filePath);
+
     if (!fs.existsSync(filePath)) {
       fs.writeFileSync(filePath, '[]', 'utf8');
       return [];
