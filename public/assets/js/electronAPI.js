@@ -325,3 +325,93 @@ function startUnreadCountWatcher(tab) {
       });
   }, 3000); 
 }
+
+
+// Floating
+const btnItems = document.getElementById('btn-items');
+const btnNotes = document.getElementById('btn-notes');
+const dropdownItems = document.getElementById('dropdown-items');
+const dropdownNotes = document.getElementById('dropdown-notes');
+
+btnItems.addEventListener('click', () => {
+    dropdownItems.classList.toggle('hidden');
+    dropdownNotes.classList.add('hidden');
+});
+
+btnNotes.addEventListener('click', () => {
+    dropdownNotes.classList.toggle('hidden');
+    dropdownItems.classList.add('hidden');
+});
+
+document.addEventListener('click', (e) => {
+    if (!btnItems.contains(e.target) && !dropdownItems.contains(e.target)) {
+      dropdownItems.classList.add('hidden');
+    }
+    if (!btnNotes.contains(e.target) && !dropdownNotes.contains(e.target)) {
+      dropdownNotes.classList.add('hidden');
+    }
+});
+
+function getActiveWebview() {
+  const webviews = document.querySelectorAll('webview');
+  for (const wv of webviews) {
+    const style = window.getComputedStyle(wv);
+    if (style.display !== 'none') {
+      return wv;
+    }
+  }
+  return null;
+}
+
+function injectTextToWhatsappWeb(text) {
+  const webview = getActiveWebview();
+  if (!webview) {
+    alert('No active tabs found. Make sure WhatsApp Web is open.!');
+    return;
+  }
+  
+  webview.executeJavaScript(`
+    (function() {
+      const inputs = Array.from(document.querySelectorAll('div[contenteditable="true"]'));
+      if (inputs.length < 2) return false;
+      
+      const input = inputs[1];
+      input.focus();
+
+      document.execCommand('insertText', false, \`${text}\`);
+
+      const event = new InputEvent('input', { bubbles: true });
+      input.dispatchEvent(event);
+
+      return true;
+    })()
+  `).then(result => {
+    if (!result) {
+      alert('Please log in to chat first before sending a message!');
+    }
+  }).catch(() => {
+    alert('An error occurred while sending the message. Please try again!');
+  });
+}
+
+dropdownItems.querySelectorAll('button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const itemText = btn.getAttribute('data-item');
+    const priceText = btn.getAttribute('data-price');
+    if (itemText && priceText) {
+      const combinedText = `${itemText} - Price: ${priceText}`;
+      injectTextToWhatsappWeb(combinedText);
+      dropdownItems.classList.add('hidden');
+    }
+  });
+});
+
+dropdownNotes.querySelectorAll('button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const noteText = btn.getAttribute('data-note');
+    if (noteText) {
+      injectTextToWhatsappWeb(noteText);
+      dropdownNotes.classList.add('hidden');
+    }
+  });
+});

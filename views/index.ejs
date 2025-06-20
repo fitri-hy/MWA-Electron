@@ -1,17 +1,66 @@
 <!DOCTYPE html>
 <html lang="en" class="<%= darkMode ? 'dark' : '' %>">
 <head>
-  <%- include('partials/head') %>
+	<%- include('partials/head') %>
 </head>
 <body class="bg-gray-50 dark:bg-neutral-800 text-gray-700 dark:text-gray-200 text-sm">
-  <header class="text-xs h-7 flex items-center gap-2 px-2 text-gray-600 dark:text-gray-300">
-    <button id="add-tab-btn" title="Add Tab" class="block py-1 flex-none">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M12.75 9a.75.75 0 0 0-1.5 0v2.25H9a.75.75 0 0 0 0 1.5h2.25V15a.75.75 0 0 0 1.5 0v-2.25H15a.75.75 0 0 0 0-1.5h-2.25z"/><path fill="currentColor" fill-rule="evenodd" d="M12.057 1.25h-.114c-2.309 0-4.118 0-5.53.19c-1.444.194-2.584.6-3.479 1.494c-.895.895-1.3 2.035-1.494 3.48c-.19 1.411-.19 3.22-.19 5.529v.114c0 2.309 0 4.118.19 5.53c.194 1.444.6 2.584 1.494 3.479c.895.895 2.035 1.3 3.48 1.494c1.411.19 3.22.19 5.529.19h.114c2.309 0 4.118 0 5.53-.19c1.444-.194 2.584-.6 3.479-1.494c.895-.895 1.3-2.035 1.494-3.48c.19-1.411.19-3.22.19-5.529v-.114c0-2.309 0-4.118-.19-5.53c-.194-1.444-.6-2.584-1.494-3.479c-.895-.895-2.035-1.3-3.48-1.494c-1.411-.19-3.22-.19-5.529-.19M3.995 3.995c.57-.57 1.34-.897 2.619-1.069c1.3-.174 3.008-.176 5.386-.176s4.086.002 5.386.176c1.279.172 2.05.5 2.62 1.069c.569.57.896 1.34 1.068 2.619c.174 1.3.176 3.008.176 5.386s-.002 4.086-.176 5.386c-.172 1.279-.5 2.05-1.069 2.62c-.57.569-1.34.896-2.619 1.068c-1.3.174-3.008.176-5.386.176s-4.086-.002-5.386-.176c-1.279-.172-2.05-.5-2.62-1.069c-.569-.57-.896-1.34-1.068-2.619c-.174-1.3-.176-3.008-.176-5.386s.002-4.086.176-5.386c.172-1.279.5-2.05 1.069-2.62" clip-rule="evenodd"/></svg>
-    </button>
-    <div class="w-full overflow-x-auto flex items-center gap-2 tabs-container" id="tabs-container"></div>
-  </header>
-  <div id="webviews-container"></div>
-  <%- include('partials/connection') %>
-  <script src="/assets/js/electronAPI.js"></script>
+	<header class="text-xs h-7 flex items-center gap-2 px-2 text-gray-600 dark:text-gray-300">
+		<button id="add-tab-btn" title="Add Tab" class="block py-1 flex-none">
+			<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M12.75 9a.75.75 0 0 0-1.5 0v2.25H9a.75.75 0 0 0 0 1.5h2.25V15a.75.75 0 0 0 1.5 0v-2.25H15a.75.75 0 0 0 0-1.5h-2.25z"/><path fill="currentColor" fill-rule="evenodd" d="M12.057 1.25h-.114c-2.309 0-4.118 0-5.53.19c-1.444.194-2.584.6-3.479 1.494c-.895.895-1.3 2.035-1.494 3.48c-.19 1.411-.19 3.22-.19 5.529v.114c0 2.309 0 4.118.19 5.53c.194 1.444.6 2.584 1.494 3.479c.895.895 2.035 1.3 3.48 1.494c1.411.19 3.22.19 5.529.19h.114c2.309 0 4.118 0 5.53-.19c1.444-.194 2.584-.6 3.479-1.494c.895-.895 1.3-2.035 1.494-3.48c.19-1.411.19-3.22.19-5.529v-.114c0-2.309 0-4.118-.19-5.53c-.194-1.444-.6-2.584-1.494-3.479c-.895-.895-2.035-1.3-3.48-1.494c-1.411-.19-3.22-.19-5.529-.19M3.995 3.995c.57-.57 1.34-.897 2.619-1.069c1.3-.174 3.008-.176 5.386-.176s4.086.002 5.386.176c1.279.172 2.05.5 2.62 1.069c.569.57.896 1.34 1.068 2.619c.174 1.3.176 3.008.176 5.386s-.002 4.086-.176 5.386c-.172 1.279-.5 2.05-1.069 2.62c-.57.569-1.34.896-2.619 1.068c-1.3.174-3.008.176-5.386.176s-4.086-.002-5.386-.176c-1.279-.172-2.05-.5-2.62-1.069c-.569-.57-.896-1.34-1.068-2.619c-.174-1.3-.176-3.008-.176-5.386s.002-4.086.176-5.386c.172-1.279.5-2.05 1.069-2.62" clip-rule="evenodd"/></svg>
+		</button>
+		<div class="w-full overflow-x-auto flex items-center gap-2 tabs-container" id="tabs-container"></div>
+	</header>
+	<div id="webviews-container"></div>
+  
+  
+  
+	<div class="fixed bottom-20 right-0 flex flex-col gap-1 z-50">
+		<div class="relative">
+			<button id="btn-items" class="p-1 bg-green-600 hover:bg-green-500 dark:hover:bg-green-600 dark:bg-green-700 hover:scale-105 hover:duration-300 hover:shadow-sm transition-all rounded-l text-white flex items-center justify-center">
+			<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+				<path d="M3.778 3.655c-.181.36-.27.806-.448 1.696l-.598 2.99a3.06 3.06 0 1 0 6.043.904l.07-.69a3.167 3.167 0 1 0 6.307-.038l.073.728a3.06 3.06 0 1 0 6.043-.904l-.598-2.99c-.178-.89-.267-1.335-.448-1.696a3 3 0 0 0-1.888-1.548C17.944 2 17.49 2 16.582 2H7.418c-.908 0-1.362 0-1.752.107a3 3 0 0 0-1.888 1.548M18.269 13.5a4.53 4.53 0 0 0 2.231-.581V14c0 3.771 0 5.657-1.172 6.828c-.943.944-2.348 1.127-4.828 1.163V18.5c0-.935 0-1.402-.201-1.75a1.5 1.5 0 0 0-.549-.549C13.402 16 12.935 16 12 16s-1.402 0-1.75.201a1.5 1.5 0 0 0-.549.549c-.201.348-.201.815-.201 1.75v3.491c-2.48-.036-3.885-.22-4.828-1.163C3.5 19.657 3.5 17.771 3.5 14v-1.081a4.53 4.53 0 0 0 2.232.581a4.55 4.55 0 0 0 3.112-1.228A4.64 4.64 0 0 0 12 13.5a4.64 4.64 0 0 0 3.156-1.228a4.55 4.55 0 0 0 3.112 1.228"/>
+			</svg>
+			</button>
+			<div id="dropdown-items" class="absolute border border-gray-100 dark:border-gray-800 bottom-0 right-full mr-2 w-[300px] overflow-y-auto max-h-[250px] bg-white dark:bg-neutral-950 rounded shadow-md p-4 hidden">
+				<h3 class="font-bold mb-2 text-xl">Items List</h3>
+				<% if (inventory.length === 0) { %>
+					<p>No items available.</p>
+				<% } else { %>
+				<% inventory.forEach(item => { %>
+					<button type="button" data-item="<%= item.item %>" data-price="<%= item.price %>" class="border border-gray-200/60 dark:border-neutral-700/60 text-sm bg-gray-50 hover:bg-gray-100 dark:bg-neutral-900 dark:hover:bg-neutral-800 rounded p-2 w-full block">
+					<div class="flex flex-col text-left">
+						<span class="font-semibold overflow-hidden line-clamp-1"><%= item.item %></span>
+						<span class="text-xs overflow-hidden line-clamp-1">Price: <%= item.price %> - Stock: <%= item.stock %></span>
+					</div>
+				</button>
+				<% }) %>
+				<% } %>
+			</div>
+		</div>
+		<div class="relative">
+			<button id="btn-notes" class="p-1 bg-green-600 hover:bg-green-500 dark:hover:bg-green-600 dark:bg-green-700 hover:scale-105 hover:duration-300 hover:shadow-sm transition-all rounded-l text-white flex items-center justify-center">
+				<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+					<path fill-rule="evenodd" d="M7.245 2h9.51c1.159 0 1.738 0 2.206.163a3.05 3.05 0 0 1 1.881 1.936C21 4.581 21 5.177 21 6.37v14.004c0 .858-.985 1.314-1.608.744a.946.946 0 0 0-1.284 0l-.483.442a1.657 1.657 0 0 1-2.25 0a1.657 1.657 0 0 0-2.25 0a1.657 1.657 0 0 1-2.25 0a1.657 1.657 0 0 0-2.25 0a1.657 1.657 0 0 1-2.25 0l-.483-.442a.946.946 0 0 0-1.284 0c-.623.57-1.608.114-1.608-.744V6.37c0-1.193 0-1.79.158-2.27c.3-.913.995-1.629 1.881-1.937C5.507 2 6.086 2 7.245 2M7 6.75a.75.75 0 0 0 0 1.5h.5a.75.75 0 0 0 0-1.5zm3.5 0a.75.75 0 0 0 0 1.5H17a.75.75 0 0 0 0-1.5zM7 10.25a.75.75 0 0 0 0 1.5h.5a.75.75 0 0 0 0-1.5zm3.5 0a.75.75 0 0 0 0 1.5H17a.75.75 0 0 0 0-1.5zM7 13.75a.75.75 0 0 0 0 1.5h.5a.75.75 0 0 0 0-1.5zm3.5 0a.75.75 0 0 0 0 1.5H17a.75.75 0 0 0 0-1.5z" clip-rule="evenodd"/>
+				</svg>
+			</button>
+			<div id="dropdown-notes" class="absolute border border-gray-100 dark:border-gray-800 bottom-0 right-full mr-2 w-[300px] overflow-y-auto max-h-[250px] bg-white dark:bg-neutral-950 rounded shadow-md p-4 hidden">
+				<h3 class="font-bold mb-2 text-xl">Notes List</h3>
+				<% if (notes.length === 0) { %>
+					<p>No notes available.</p>
+				<% } else { %>
+				<% notes.forEach(note => { %>
+				<button type="button" data-note="<%= note.note %>" class="border border-gray-200/60 dark:border-neutral-700/60 text-sm bg-gray-50 hover:bg-gray-100 dark:bg-neutral-900 dark:hover:bg-neutral-800 rounded p-2 w-full block">
+					<div class="flex flex-col text-left">
+						<span class="font-semibold overflow-hidden line-clamp-1"><%= note.title %></span>
+						<span class="text-xs overflow-hidden line-clamp-1"><%= note.note %></span>
+					</div>
+				</button>
+				<% }) %>
+				<% } %>
+			</div>
+		</div>
+	</div>
+	<%- include('partials/connection') %>
+	<script src="/assets/js/electronAPI.js"></script>
 </body>
 </html>

@@ -60,7 +60,33 @@ app.post('/lockscreen', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-  res.render('index', { darkMode, title: 'M-WA' });
+  function readOrCreateEmptyArr(filePath) {
+    if (!fs.existsSync(filePath)) {
+      fs.writeFileSync(filePath, '[]', 'utf8');
+      return [];
+    }
+    try {
+      const data = fs.readFileSync(filePath, 'utf8');
+      return JSON.parse(data);
+    } catch (err) {
+      console.error(`Error reading/parsing ${filePath}:`, err);
+      return [];
+    }
+  }
+
+  const homeDir = os.homedir();
+  const inventoryPath = path.join(homeDir, '.config', 'M-WA', 'pos', 'inventory.json');
+  const notePath = path.join(homeDir, '.config', 'M-WA', 'notes', 'note.json');
+
+  const inventory = readOrCreateEmptyArr(inventoryPath);
+  const notes = readOrCreateEmptyArr(notePath);
+
+  res.render('index', {
+    title: 'M-WA',
+    inventory,
+    notes,
+    darkMode: false,
+  });
 });
 
 app.get('/bot', (req, res) => {
