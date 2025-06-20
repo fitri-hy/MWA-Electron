@@ -55,7 +55,7 @@ function renderTabs() {
 
   tabs.forEach((tab, index) => {
     const tabDiv = document.createElement('div');
-    tabDiv.className = 'block border-b-2 flex items-center gap-2 p-1 hover:bg-gray-100 dark:hover:bg-neutral-900 cursor-pointer';
+    tabDiv.className = 'block border-b-2 flex items-center gap-1 p-1 hover:bg-gray-100 dark:hover:bg-neutral-900 cursor-pointer';
     tabDiv.dataset.tabId = tab.id;
     tabDiv.draggable = true;
     if (tab.id === activeTabId) {
@@ -65,24 +65,38 @@ function renderTabs() {
       tabDiv.classList.add('border-gray-300');
       tabDiv.classList.remove('border-green-500');
     }
+	
     tabDiv.setAttribute('role', 'tab');
     tabDiv.setAttribute('aria-selected', tab.id === activeTabId ? 'true' : 'false');
     tabDiv.setAttribute('tabindex', tab.id === activeTabId ? '0' : '-1');
+	
+	const titleText = tab.title.replace(/\(\d+\)/, '').trim();
+    const unreadMatch = tab.title.match(/\((\d+)\)/);
+    const unreadCount = unreadMatch ? unreadMatch[1] : null;
 
     const titleSpan = document.createElement('span');
     titleSpan.className = 'whitespace-nowrap';
-    titleSpan.textContent = tab.title;
+    titleSpan.textContent = titleText;
+    tabDiv.appendChild(titleSpan);
+	
+    tabDiv.appendChild(titleSpan);
+	
+	if (unreadCount) {
+      const unreadSpan = document.createElement('span');
+      unreadSpan.className = 'bg-green-500 dark:bg-green-700 rounded-full text-white h-4 w-4 text-[8px] flex items-center justify-center';
+      unreadSpan.textContent = `${unreadCount}`;
+      tabDiv.appendChild(unreadSpan);
+    }
 
     const closeBtn = document.createElement('button');
-    closeBtn.className = 'block text-rose-400 hover:text-rose-500 dark:text-rose-600 dark:hover:text-rose-500';
+    closeBtn.className = 'block flex items-center justify-center rounded h-4 w-4 text-white bg-rose-400 hover:bg-rose-500 dark:bg-rose-700 dark:hover:bg-rose-600';
     closeBtn.setAttribute('aria-label', `Close tab ${tab.title}`);
     closeBtn.innerHTML = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
-        <path fill-rule="evenodd" clip-rule="evenodd" d="M22 12c0 5.523-4.477 10-10 10S2 17.523 2 12S6.477 2 12 2s10 4.477 10 10M8.97 8.97a.75.75 0 0 1 1.06 0L12 10.94l1.97-1.97a.75.75 0 0 1 1.06 1.06L13.06 12l1.97 1.97a.75.75 0 0 1-1.06 1.06L12 13.06l-1.97 1.97a.75.75 0 0 1-1.06-1.06L10.94 12l-1.97-1.97a.75.75 0 0 1 0-1.06" />
-      </svg>
-    `;
+	  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-3 w-3">
+	    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+	  </svg>
+	`;
 
-    tabDiv.appendChild(titleSpan);
     tabDiv.appendChild(closeBtn);
     tabsContainer.appendChild(tabDiv);
 
@@ -159,6 +173,7 @@ function createWebview(tab) {
   webview.style.display = 'none';
 
   webviewsContainer.appendChild(webview);
+  startUnreadCountWatcher(tab);
 }
 
 function updateWebviewVisibility() {
@@ -283,3 +298,30 @@ window.addEventListener('keydown', (e) => {
     updateWebviewVisibility();
   }
 });
+
+function startUnreadCountWatcher(tab) {
+  const webview = document.getElementById('wv-' + tab.id);
+  if (!webview) return;
+
+  setInterval(() => {
+    webview.executeJavaScript('document.title')
+      .then(title => {
+        const match = title.match(/^\((\d+)\)/);
+        const unreadCount = match ? parseInt(match[1], 10) : 0;
+
+        const tabIndex = tabs.findIndex(t => t.id === tab.id);
+        if (tabIndex !== -1) {
+          const baseTitle = tab.id.toUpperCase();
+
+          tabs[tabIndex].title = unreadCount > 0 
+            ? `${baseTitle} (${unreadCount})` 
+            : baseTitle;
+
+          renderTabs();
+        }
+      })
+      .catch(err => {
+        console.error('Gagal membaca title:', err);
+      });
+  }, 3000); 
+}
