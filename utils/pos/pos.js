@@ -833,7 +833,6 @@ function report(res, darkMode) {
                 });
               });
 
-              // Hitung total dari invoicesByVendor supaya sesuai data yang dirender
               let totalItem = 0;
               let totalQty = 0;
               let totalCOGS = 0;
