@@ -5,7 +5,8 @@ const os = require('os');
 const AdmZip = require('adm-zip');
 
 const { dialog, nativeTheme, app, screen, Menu, BrowserWindow, shell } = require('electron');
-const { clearAllData } = require('./tab');
+const { clearAllTab } = require('./tab');
+const { resetAllData } = require('./file');
 const { createBotWindow } = require('./botWindow');
 const { createAutoReplyWindow } = require('./autoReplyWindow');
 const { createSettingWindow } = require('./settingWindow');
@@ -143,10 +144,32 @@ function menuApp(win, tabsFilePath, tabsData) {
               noLink: true,
             });
             if (result.response === 1) {
-              clearAllData(tabsFilePath, tabsData);
+              clearAllTab(tabsFilePath, tabsData);
             }
           },
         },
+		{
+		  label: 'Clear Data',
+		  click: async () => {
+			const result = await dialog.showMessageBox({
+			  type: 'warning',
+			  buttons: ['Cancel', 'Reset'],
+			  defaultId: 1,
+			  cancelId: 0,
+			  title: 'Reset All Data',
+			  message: 'Are you sure you want to delete all data files? This action cannot be undone.',
+			  noLink: true,
+			});
+
+			if (result.response === 1) {
+			  resetAllData();
+			  setTimeout(() => {
+				app.relaunch();
+				app.exit(0);
+			  }, 500);
+			}
+		  }
+		},
         {
           type: 'separator',
         },

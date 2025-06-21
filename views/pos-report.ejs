@@ -190,50 +190,67 @@
 				</div>
 			</div>
 			
-			<div id="content-vendor" class="hidden mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-				<% 
-				  const invoicesByVendor = {};
-				  invoices.forEach(inv => {
-					const vendorName = inv.vendor || 'Unknown Vendor';
-					if (!invoicesByVendor[vendorName]) {
-					  invoicesByVendor[vendorName] = [];
-					}
-					invoicesByVendor[vendorName].push(inv);
-				  });
-				  Object.entries(invoicesByVendor).forEach(([vendor, vendorInvoices]) => {
-					const totalQtyVendor = vendorInvoices.reduce((acc, cur) => acc + cur.totalQty, 0);
-					const totalPriceVendor = vendorInvoices.reduce((acc, cur) => acc + cur.totalPrice, 0);
-				%>
-				  <div class="w-full overflow-x-auto">
-					<h3 class="font-semibold text-lg mb-2"><%= vendor %></h3>
-					<table class="w-full text-sm bg-white dark:bg-neutral-900">
-					  <thead class="bg-green-500 dark:bg-green-700 text-white">
-						<tr>
-						  <th class="p-2 text-left">Invoice</th>
-						  <th class="p-2 text-left">Date</th>
-						  <th class="p-2 text-right">Qty</th>
-						  <th class="p-2 text-right">Total</th>
+			<div id="content-vendor" class="hidden mt-4 grid grid-cols-1 gap-4">
+			  <% 
+				const groupedByVendor = {};
+				invoicesByVendor.forEach(inv => {
+				  if (!groupedByVendor[inv.vendor]) groupedByVendor[inv.vendor] = [];
+				  groupedByVendor[inv.vendor].push(inv);
+				});
+
+				Object.entries(groupedByVendor).forEach(([vendor, vendorInvoices]) => {
+				  const totalQtyVendor = vendorInvoices.reduce((acc, cur) => acc + cur.totalQty, 0);
+				  const totalPriceVendor = vendorInvoices.reduce((acc, cur) => acc + cur.totalPrice, 0);
+			  %>
+				<div class="w-full overflow-x-auto">
+				  <h3 class="font-semibold text-lg mb-2"><%= vendor %></h3>
+				  <table class="w-full text-sm bg-white dark:bg-neutral-900">
+					<thead class="bg-green-500 dark:bg-green-700 text-white">
+					  <tr>
+						<th class="p-2 text-left">Invoice</th>
+						<th class="p-2 text-left">Date</th>
+						<th class="p-2 text-left max-w-xs md:max-w-md">Items</th>
+						<th class="p-2 text-right">Qty</th>
+						<th class="p-2 text-right">Total</th>
+					  </tr>
+					</thead>
+					<tbody>
+					  <% vendorInvoices.forEach(inv => { %>
+						<tr class="border-b border-gray-200 dark:border-neutral-700 align-top">
+						  <td class="p-2 whitespace-nowrap"><%= inv.invoice %></td>
+						  <td class="p-2 whitespace-nowrap"><%= inv.date %></td>
+						  <td class="p-2 whitespace-nowrap w-full">
+							<div>
+							  <% inv.inventory.forEach(item => { %>
+								<div class="overflow-hidden line-clamp-1 min-w-[150px] gap-4 flex justify-between items-center">
+									<span>
+										<%= item.item %>
+									</span>
+									<span class="flex items-center">
+										<%= Number(item.price).toLocaleString() %>
+										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-3">
+										  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+										</svg>
+										<%= item.qty %>
+									</span>
+								</div>
+							  <% }); %>
+							</div>
+						  </td>
+						  <td class="p-2 text-center whitespace-nowrap"><%= inv.totalQty %></td>
+						  <td class="p-2 text-right whitespace-nowrap"><%= inv.totalPrice.toLocaleString() %></td>
 						</tr>
-					  </thead>
-					  <tbody>
-						<% vendorInvoices.forEach(inv => { %>
-						  <tr class="border-b border-gray-200 dark:border-neutral-700">
-							<td class="p-2 text-left whitespace-nowrap"><%= inv.invoice %></td>
-							<td class="p-2 text-left whitespace-nowrap"><%= inv.date %></td>
-							<td class="p-2 text-center whitespace-nowrap"><%= inv.totalQty %></td>
-							<td class="p-2 text-right whitespace-nowrap"><%= inv.totalPrice.toLocaleString() %></td>
-						  </tr>
-						<% }); %>
-						<tr class="font-semibold bg-gray-50 dark:bg-neutral-800">
-						  <td class="p-2 text-left whitespace-nowrap" colspan="2">Total</td>
-						  <td class="p-2 text-center whitespace-nowrap"><%= totalQtyVendor %></td>
-						  <td class="p-2 text-right whitespace-nowrap"><%= totalPriceVendor.toLocaleString() %></td>
-						</tr>
-					  </tbody>
-					</table>
-				  </div>
-				<% }); %>
-			<div>
+					  <% }); %>
+					  <tr class="font-semibold bg-gray-50 dark:bg-neutral-800">
+						<td class="p-2 whitespace-nowrap" colspan="3">Total</td>
+						<td class="p-2 text-center whitespace-nowrap"><%= totalQtyVendor %></td>
+						<td class="p-2 text-right whitespace-nowrap"><%= totalPriceVendor.toLocaleString() %></td>
+					  </tr>
+					</tbody>
+				  </table>
+				</div>
+			  <% }); %>
+			</div>
 			
 		</div>
 	</main>

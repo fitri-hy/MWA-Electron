@@ -1,7 +1,7 @@
 const { session, BrowserWindow, app } = require('electron');
 const { removeFile } = require('./file');
 
-async function clearAllData(tabsFilePath, tabsData) {
+async function clearAllTab(tabsFilePath, tabsData) {
   try {
     removeFile(tabsFilePath);
     await session.defaultSession.clearStorageData();
@@ -25,5 +25,5 @@ async function clearAllData(tabsFilePath, tabsData) {
 }
 
 module.exports = {
-  clearAllData,
+  clearAllTab,
 };

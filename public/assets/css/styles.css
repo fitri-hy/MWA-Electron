@@ -1307,6 +1307,10 @@ video {
   width: 1.5rem;
   height: 1.5rem;
 }
+.size-3 {
+  width: 0.75rem;
+  height: 0.75rem;
+}
 .h-10 {
   height: 2.5rem;
 }
@@ -1408,6 +1412,9 @@ video {
 }
 .min-w-\[100px\] {
   min-width: 100px;
+}
+.min-w-\[150px\] {
+  min-width: 150px;
 }
 .min-w-\[300px\] {
   min-width: 300px;
@@ -1540,6 +1547,9 @@ video {
 }
 .overflow-y-auto {
   overflow-y: auto;
+}
+.whitespace-normal {
+  white-space: normal;
 }
 .whitespace-nowrap {
   white-space: nowrap;
@@ -1768,6 +1778,9 @@ video {
 }
 .text-right {
   text-align: right;
+}
+.align-top {
+  vertical-align: top;
 }
 .text-2xl {
   font-size: 1.5rem;
@@ -2270,6 +2283,10 @@ video {
 }
 
 @media (min-width: 768px) {
+
+  .md\:max-w-md {
+    max-width: 28rem;
+  }
 
   .md\:columns-2 {
     -moz-columns: 2;

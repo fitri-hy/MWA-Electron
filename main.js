@@ -1,9 +1,10 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
+const os = require('os');
 
 const startExpressServer = require('./app');
+const fileUtils = require('./utils/file');
 const { ensureDirExists } = require('./utils/file');
-const { clearAllData } = require('./utils/tab');
 const { createWindow } = require('./utils/window');
 const { registerIPC } = require('./utils/ipc');
 

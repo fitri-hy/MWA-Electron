@@ -787,14 +787,61 @@ function report(res, darkMode) {
                 };
               });
 
+              let invoicesByVendor = [];
+
+              invoices.forEach(inv => {
+                const itemsByVendor = {};
+
+                inv.inventory.forEach(i => {
+                  const item = inventoryMap.get(i.id_item);
+                  const qty = Number(i.qty) || 0;
+                  const price = Number(item?.price || 0);
+                  const cogs = Number(item?.cogs || 0);
+                  const vendorName = vendorMap.get(item?.vendor_id) || 'Unknown';
+
+                  if (!itemsByVendor[vendorName]) {
+                    itemsByVendor[vendorName] = {
+                      vendor: vendorName,
+                      invoice: inv.invoice,
+                      date: inv.date,
+                      customer: customerMap.get(Number(inv.id_customer)) || { name: 'Unknown' },
+                      inventory: [],
+                      totalQty: 0,
+                      totalPrice: 0,
+                      totalCOGS: 0,
+                      profit: 0,
+                    };
+                  }
+
+                  itemsByVendor[vendorName].inventory.push({
+                    ...i,
+                    item: item?.item || 'Unknown',
+                    price,
+                    cogs,
+                    qty,
+                    vendor: vendorName,
+                  });
+
+                  itemsByVendor[vendorName].totalQty += qty;
+                  itemsByVendor[vendorName].totalPrice += price * qty;
+                  itemsByVendor[vendorName].totalCOGS += cogs * qty;
+                });
+
+                Object.values(itemsByVendor).forEach(vendorInvoice => {
+                  vendorInvoice.profit = vendorInvoice.totalPrice - vendorInvoice.totalCOGS;
+                  invoicesByVendor.push(vendorInvoice);
+                });
+              });
+
+              // Hitung total dari invoicesByVendor supaya sesuai data yang dirender
               let totalItem = 0;
               let totalQty = 0;
               let totalCOGS = 0;
               let totalPrice = 0;
               let totalProfit = 0;
 
-              invoices.forEach(inv => {
-                totalItem += inv.itemCount;
+              invoicesByVendor.forEach(inv => {
+                totalItem += inv.inventory.length;
                 totalQty += inv.totalQty;
                 totalCOGS += inv.totalCOGS;
                 totalPrice += inv.totalPrice;
@@ -813,6 +860,7 @@ function report(res, darkMode) {
                 darkMode,
                 title: 'Report | M-WA',
                 invoices,
+                invoicesByVendor,
                 totalItem,
                 totalQty,
                 totalCOGS,
@@ -825,8 +873,8 @@ function report(res, darkMode) {
                 addStocks,
                 writeOffStocks,
                 inventoryMap,
-			    customers,
-			    inventory
+                customers,
+                inventory
               });
             });
           });
