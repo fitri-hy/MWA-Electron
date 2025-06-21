@@ -13,6 +13,7 @@ const { ensureAutoRepliesFile, readAutoReplies, saveAutoReplies, ensureFirstMess
 const { lockscreenMiddleware, lockscreenGet, lockscreenPost, settingData } = require('./utils/lockscreen');
 const { generateText, generateImage } = require('./utils/gemini');
 const { getNotes, addNote, editNote, deleteNote } = require('./utils/notes');
+const { updateFloating } = require('./utils/floating');
 const { 
 	invoice, createInvoice, deleteInvoice,
 	vendor, addVendor, editVendor, deleteVendor,
@@ -63,6 +64,7 @@ app.get('/', (req, res) => {
   const homeDir = os.homedir();
   const inventoryPath = path.join(homeDir, '.config', 'M-WA', 'pos', 'inventory.json');
   const notePath = path.join(homeDir, '.config', 'M-WA', 'notes', 'note.json');
+  const floatingPath = path.join(homeDir, '.config', 'M-WA', 'setting', 'floating.json');
 
   function ensureDirExist(filePath) {
     const dir = path.dirname(filePath);
@@ -73,7 +75,6 @@ app.get('/', (req, res) => {
 
   function readOrCreateEmptyArr(filePath) {
     ensureDirExist(filePath);
-
     if (!fs.existsSync(filePath)) {
       fs.writeFileSync(filePath, '[]', 'utf8');
       return [];
@@ -87,14 +88,43 @@ app.get('/', (req, res) => {
     }
   }
 
+  function readOrCreateEmptyObjFromArr(filePath) {
+    ensureDirExist(filePath);
+    if (!fs.existsSync(filePath)) {
+      const defaultData = [
+        { floatingItem: true },
+        { floatingList: true }
+      ];
+      fs.writeFileSync(filePath, JSON.stringify(defaultData, null, 2), 'utf8');
+      return defaultData.reduce((acc, item) => ({ ...acc, ...item }), {});
+    }
+
+    try {
+      const data = fs.readFileSync(filePath, 'utf8');
+      const arr = JSON.parse(data);
+      return arr.reduce((acc, item) => ({ ...acc, ...item }), {});
+    } catch (err) {
+      console.error(`Error reading/parsing ${filePath}:`, err);
+      return {};
+    }
+  }
+
   const inventory = readOrCreateEmptyArr(inventoryPath);
   const notes = readOrCreateEmptyArr(notePath);
+  let floating = readOrCreateEmptyObjFromArr(floatingPath);
+
+  fs.watch(floatingPath, (eventType) => {
+    if (eventType === 'change') {
+      floating = readOrCreateEmptyObjFromArr(floatingPath);
+    }
+  });
 
   res.render('index', {
     title: 'M-WA',
     inventory,
     notes,
     darkMode: false,
+    ...floating,
   });
 });
 
@@ -284,10 +314,37 @@ app.get('/setting', (req, res) => {
   const configDir = path.join(homeDir, '.config', 'M-WA', 'setting');
   const settingPath = path.join(configDir, 'setting.json');
   const geminiPath = path.join(configDir, 'gemini.json');
+  const floatingPath = path.join(configDir, 'floating.json');
 
   let settings = { password: '', enabled: false };
-  let gemini = { apikey: '', MaxHistory: 10, instruction: 'Respond briefly to each question.' };
- 
+  let gemini = {
+    apikey: '',
+    MaxHistory: 10,
+    instruction: 'Respond briefly to each question.'
+  };
+
+  let floating = {};
+
+  function readFloatingAsObject(filePath) {
+    if (!fs.existsSync(filePath)) {
+      const defaultData = [
+        { floatingItem: true },
+        { floatingList: true }
+      ];
+      fs.writeFileSync(filePath, JSON.stringify(defaultData, null, 2), 'utf8');
+      return defaultData.reduce((acc, item) => ({ ...acc, ...item }), {});
+    }
+
+    try {
+      const raw = fs.readFileSync(filePath, 'utf8');
+      const arr = JSON.parse(raw);
+      return arr.reduce((acc, item) => ({ ...acc, ...item }), {});
+    } catch (err) {
+      console.error('Error reading floating.json in setting:', err);
+      return {};
+    }
+  }
+
   try {
     if (fs.existsSync(settingPath)) {
       settings = JSON.parse(fs.readFileSync(settingPath, 'utf8'));
@@ -297,6 +354,8 @@ app.get('/setting', (req, res) => {
       const data = JSON.parse(fs.readFileSync(geminiPath, 'utf8'));
       gemini = { ...gemini, ...data };
     }
+
+    floating = readFloatingAsObject(floatingPath);
   } catch (err) {
     console.error('Error reading config files:', err);
   }
@@ -305,11 +364,12 @@ app.get('/setting', (req, res) => {
     darkMode: req.darkMode || false,
     title: 'Setting | M-WA',
     enabled: settings.enabled,
-	apikey: gemini.apikey,
+    apikey: gemini.apikey,
     maxHistory: gemini.MaxHistory,
     instruction: gemini.instruction,
     success_msg: req.flash('success_msg'),
     error_msg: req.flash('error_msg'),
+    ...floating,
   });
 });
 
@@ -377,6 +437,46 @@ app.post('/setting/toggle', (req, res) => {
     req.flash('success_msg', 'Toggle successfully updated');
     res.redirect('/setting');
   });
+});
+
+app.post('/setting/floating/items', (req, res) => {
+  function toBoolean(value) {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') {
+      return value.toLowerCase() === 'true';
+    }
+    return Boolean(value);
+  }
+
+  const newValue = toBoolean(req.body.floatingItem);
+  const success = updateFloating('floatingItem', newValue);
+
+  if (success) {
+    req.flash('success_msg', 'Floating Items updated');
+  } else {
+    req.flash('error_msg', 'Failed to update Floating Items');
+  }
+  res.redirect('/setting');
+});
+
+app.post('/setting/floating/notes', (req, res) => {
+  function toBoolean(value) {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') {
+      return value.toLowerCase() === 'true';
+    }
+    return Boolean(value);
+  }
+
+  const newValue = toBoolean(req.body.floatingList);
+  const success = updateFloating('floatingList', newValue);
+
+  if (success) {
+    req.flash('success_msg', 'Floating Notes updated');
+  } else {
+    req.flash('error_msg', 'Failed to update Floating Notes');
+  }
+  res.redirect('/setting');
 });
 
 app.get('/ai', (req, res) => {
@@ -483,7 +583,6 @@ app.post('/setting/gemini', (req, res) => {
   });
 });
 
-
 app.get('/notes', (req, res) => {
   const q = req.query.q?.toLowerCase() || '';
   let allNotes = getNotes();
@@ -502,7 +601,6 @@ app.get('/notes', (req, res) => {
     query: q,
   });
 });
-
 
 app.post('/notes/add', (req, res) => {
   const { title, note } = req.body;

@@ -5,15 +5,22 @@ const os = require('os');
 const homeDir = os.homedir();
 const basePath = path.join(homeDir, '.config', 'M-WA');
 const firstMessagePath = path.join(basePath, 'auto-reply', 'firstMessage.json');
+const floatingJsonPath = path.join(basePath, 'setting', 'floating.json');
 
 const defaultFirstMessage = {
   message: "Hello! Thank you for contacting me. How can I help you?",
   enabled: false
 };
 
+const defaultFloatingData = [
+  { floatingItem: true },
+  { floatingList: true }
+];
+
 const pathsToEnsure = [
   path.join(basePath, 'setting', 'setting.json'),
   path.join(basePath, 'setting', 'gemini.json'),
+  path.join(basePath, 'setting', 'floating.json'),
   path.join(basePath, 'pos', 'add-stock-record.json'),
   path.join(basePath, 'pos', 'write-off-stock-record.json'),
   path.join(basePath, 'pos', 'customer.json'),
@@ -25,7 +32,29 @@ const pathsToEnsure = [
   firstMessagePath,
 ];
 
+// Pastikan file-file ada dengan default kosong atau objek khusus
 pathsToEnsure.forEach(ensureFileWithEmptyArrayOrObject);
+
+// Pastikan floating.json ada dan tidak kosong
+ensureFloatingJson();
+
+function ensureFloatingJson() {
+  ensureDirExists(floatingJsonPath);
+
+  let data = null;
+  if (fs.existsSync(floatingJsonPath)) {
+    try {
+      data = JSON.parse(fs.readFileSync(floatingJsonPath, 'utf-8'));
+    } catch (e) {
+      data = null; // Jika gagal parse, anggap kosong
+    }
+  }
+
+  // Jika file belum ada atau isi array kosong, tulis default data
+  if (!data || (Array.isArray(data) && data.length === 0)) {
+    writeJSON(floatingJsonPath, defaultFloatingData);
+  }
+}
 
 function ensureDirExists(filePath) {
   const dir = path.dirname(filePath);

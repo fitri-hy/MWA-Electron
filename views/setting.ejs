@@ -50,6 +50,52 @@
 				</div>
 			</form>
 		</div>
+		<div class="mt-4 break-inside-avoid flex flex-col gap-4 bg-white dark:bg-neutral-900 p-4 border border-gray-100 dark:border-neutral-700 rounded">
+			<div class="w-full flex items-center justify-between gap-4 border-b border-gray-200 dark:border-neutral-700 pb-4">
+				<h2 class="text-xl font-semibold">
+					Floating Button
+				</h2>
+			</div>
+			<div class="flex flex-col gap-4">
+				<div class="w-full flex gap-4">
+					<form action="/setting/floating/items" method="POST" class="w-full flex flex-col gap-1">
+						<input type="hidden" name="floatingItem" value="false" />
+						<label for="floatingItemToggle" class="text-sm font-medium text-gray-900 dark:text-white">Items</label>
+						<label class="relative inline-flex items-center cursor-pointer">
+						  <input
+							type="checkbox"
+							name="floatingItem"
+							id="floatingItemToggle"
+							value="true"
+							onchange="this.form.submit()"
+							class="sr-only peer"
+							<%= floatingItem ? 'checked' : '' %>>
+						  <div
+							class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-green-500 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600">
+						  </div>
+						</label>
+					</form>
+					<form action="/setting/floating/notes" method="POST" class="w-full flex flex-col gap-1">
+						<input type="hidden" name="floatingList" value="false" />
+						<label for="floatingListToggle" class="text-sm font-medium text-gray-900 dark:text-white">Notes</label>
+						<label class="relative inline-flex items-center cursor-pointer">
+						  <input
+							type="checkbox"
+							name="floatingList"
+							id="floatingListToggle"
+							value="true"
+							onchange="this.form.submit()"
+							class="sr-only peer"
+							<%= floatingList ? 'checked' : '' %>>
+						  <div
+							class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-green-500 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600">
+						  </div>
+						</label>
+					</form>
+				</div>
+			</div>
+			<span class="italic">Please reload the page to see the latest changes.</span>
+		</div>
 		<div class="break-inside-avoid flex flex-col gap-4 bg-white dark:bg-neutral-900 p-4 border border-gray-100 dark:border-neutral-700 rounded">
 			<div class="w-full flex items-center justify-between gap-4 border-b border-gray-200 dark:border-neutral-700 pb-4">
 				<h2 class="text-xl font-semibold">
