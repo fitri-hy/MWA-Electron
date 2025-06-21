@@ -23,12 +23,12 @@ function initBotSocket(io) {
         socket.emit('sessions-list', sessionsList);
       } catch (e) {
         console.error('Failed to list sessions', e);
-        socket.emit('error', { message: 'Gagal mengambil daftar session' });
+        socket.emit('error', { message: 'Failed to take registration session' });
       }
     });
 
     socket.on('start-session', async ({ sessionId }) => {
-      if (!sessionId) return socket.emit('error', { message: 'Session ID tidak boleh kosong' });
+      if (!sessionId) return socket.emit('error', { message: 'Session ID cannot be empty' });
 
       try {
         await startSession(sessionId, socket);

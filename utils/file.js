@@ -17,6 +17,14 @@ const defaultFloatingData = [
   { floatingList: true }
 ];
 
+const defaultAutoReply = [
+  {
+    id: 1,
+    value: "!ping",
+    response: "pong!"
+  }
+];
+
 const pathsToEnsure = [
   path.join(basePath, 'setting', 'setting.json'),
   path.join(basePath, 'setting', 'gemini.json'),
@@ -32,10 +40,7 @@ const pathsToEnsure = [
   firstMessagePath,
 ];
 
-// Pastikan file-file ada dengan default kosong atau objek khusus
 pathsToEnsure.forEach(ensureFileWithEmptyArrayOrObject);
-
-// Pastikan floating.json ada dan tidak kosong
 ensureFloatingJson();
 
 function ensureFloatingJson() {
@@ -46,11 +51,10 @@ function ensureFloatingJson() {
     try {
       data = JSON.parse(fs.readFileSync(floatingJsonPath, 'utf-8'));
     } catch (e) {
-      data = null; // Jika gagal parse, anggap kosong
+      data = null;
     }
   }
 
-  // Jika file belum ada atau isi array kosong, tulis default data
   if (!data || (Array.isArray(data) && data.length === 0)) {
     writeJSON(floatingJsonPath, defaultFloatingData);
   }
@@ -78,11 +82,16 @@ function removeFile(filePath) {
 
 function ensureFileWithEmptyArrayOrObject(filePath) {
   ensureDirExists(filePath);
+
   if (!fs.existsSync(filePath)) {
-    const isFirstMessage = filePath === firstMessagePath;
-    const content = isFirstMessage
-      ? JSON.stringify(defaultFirstMessage, null, 2)
-      : '[]';
+    let content = '[]';
+
+    if (filePath === firstMessagePath) {
+      content = JSON.stringify(defaultFirstMessage, null, 2);
+    } else if (filePath.endsWith('autoReply.json')) {
+      content = JSON.stringify(defaultAutoReply, null, 2);
+    }
+
     fs.writeFileSync(filePath, content, 'utf-8');
   }
 }

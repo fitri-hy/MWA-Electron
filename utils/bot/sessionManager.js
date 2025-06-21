@@ -78,7 +78,7 @@ function deleteSession(sessionId, socket) {
   fs.rm(sessionDir, { recursive: true, force: true }, (err) => {
     if (err) {
       console.error('Failed to delete session folder', err);
-      socket.emit('error', { message: 'Gagal hapus folder session' });
+      socket.emit('error', { message: 'Failed to delete session folder' });
     } else {
       socket.emit('session-deleted', sessionId);
     }
