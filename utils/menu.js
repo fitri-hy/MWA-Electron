@@ -268,13 +268,15 @@ function menuApp(win, tabsFilePath, tabsData) {
 			  type: 'info',
 			  title: 'About',
 			  message: 'M-WA is an Electron application that allows you to manage multiple WhatsApp accounts at once in one place. With multi-account bot features and auto-response management, M-WA helps automate WhatsApp conversations easily and efficiently.',
-			  buttons: ['Visit GitHub', 'Close'],
+			  buttons: ['Visit GitHub', 'Visit Website', 'Close'],
 			  defaultId: 0,
 			});
 
 			if (result.response === 0) {
 			  shell.openExternal('https://github.com/fitri-hy');
-			}
+			} else if (result.response === 1) {
+              shell.openExternal('https://fhylabs.com');
+            }
 		  }
 		},
 	  ],
