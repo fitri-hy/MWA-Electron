@@ -14,7 +14,7 @@
 </div>
 
 <p align="center">
-  <img src="./public/assets/images/ss.jpg" alt="MWA-Electron Screenshot" width="100%" />
+  <img src="./public/assets/images/sss.jpg" alt="MWA-Electron Screenshot" width="100%" />
 </p>
 
 # 💬 MWA-Electron

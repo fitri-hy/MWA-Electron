@@ -949,6 +949,7 @@ app.get('/docs', (req, res) => {
 	'report.md',
 	'notes.md',
 	'lockscreen.md',
+	'floating.md',
 	'fullscreen.md',
 	'lightDark.md',
 	'reload.md',

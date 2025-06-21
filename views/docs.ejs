@@ -47,6 +47,9 @@
 			<button onclick="Tab('lockscreen')" class="tab-btn px-2 py-1 border-l-4 border-gray-100 dark:border-neutral-900 hover:border-green-500 dark:hover:border-green-700 w-full text-left">
 				Lockscreen
 			</button>
+			<button onclick="Tab('floating')" class="tab-btn px-2 py-1 border-l-4 border-gray-100 dark:border-neutral-900 hover:border-green-500 dark:hover:border-green-700 w-full text-left">
+				Floating
+			</button>
 			<button onclick="Tab('fullscreen')" class="tab-btn px-2 py-1 border-l-4 border-gray-100 dark:border-neutral-900 hover:border-green-500 dark:hover:border-green-700 w-full text-left">
 				Fullscreen
 			</button>
@@ -57,7 +60,7 @@
 				Reload
 			</button>
 			<button onclick="Tab('clear-tabs')" class="tab-btn px-2 py-1 border-l-4 border-gray-100 dark:border-neutral-900 hover:border-green-500 dark:hover:border-green-700 w-full text-left">
-				Clear Tabs
+				Clear Tab & Data
 			</button>
 			<button onclick="Tab('backup-restore')" class="tab-btn px-2 py-1 border-l-4 border-gray-100 dark:border-neutral-900 hover:border-green-500 dark:hover:border-green-700 w-full text-left">
 				Backup & Restore
@@ -104,6 +107,9 @@
 		</div>
 		<div id="content-lockscreen" class="prose dark:prose-invert max-w-none tab-content hidden">
 			<%- lockscreen %>
+		</div>
+		<div id="content-floating" class="prose dark:prose-invert max-w-none tab-content hidden">
+			<%- floating %>
 		</div>
 		<div id="content-fullscreen" class="prose dark:prose-invert max-w-none tab-content hidden">
 			<%- fullscreen %>
