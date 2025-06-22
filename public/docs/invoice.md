@@ -19,3 +19,9 @@
 2. In the **Toolbar → POS** section, select the **Report** menu.
 3. On the report page, find the Invoice table.
 4. You can delete the Invoice directly through the options available in the table. <img src="/docs/images/8.jpg"/>
+
+### Custom Logo Invoice & Store Name
+
+1. Run the **M-WA** application.
+2. In the **Toolbar → File → Setting** section. <img src="/docs/images/20.jpg"/>
+

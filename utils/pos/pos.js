@@ -10,6 +10,8 @@ const customerPath = path.join(configDir, 'customer.json');
 const invoicePath = path.join(configDir, 'invoice.json');
 const addStockRecordPath = path.join(configDir, 'add-stock-record.json');
 const writeOffStockRecordPath = path.join(configDir, 'write-off-stock-record.json');
+const storeDir = path.join(homeDir, '.config', 'M-WA', 'store');
+const storeInfoPath = path.join(storeDir, 'info.json');
 
 const filePaths = {
   vendor: vendorPath,
@@ -42,6 +44,19 @@ const watchFiles = () => {
   });
 };
 
+function findStoreLogo() {
+  if (!fs.existsSync(storeDir)) return null;
+
+  const files = fs.readdirSync(storeDir);
+  const logoFile = files.find(file => /^store\.(png|jpg|jpeg|svg)$/i.test(file));
+  if (logoFile) {
+    const fullPath = path.join(storeDir, logoFile);
+    const normalizedPath = fullPath.replace(/\\/g, '/');
+    return 'file://' + encodeURI(normalizedPath);
+  }
+  return null;
+}
+
 function invoice(res, darkMode) {
   ensureFilesExist();
 
@@ -66,45 +81,59 @@ function invoice(res, darkMode) {
           return;
         }
 
-        let customers, inventory, invoices;
-        try {
-          customers = JSON.parse(customerData);
-          inventory = JSON.parse(inventoryData);
-          invoices = JSON.parse(invoiceData);
-        } catch {
-          console.error('Failed to parse JSON');
-          res.status(500).send('Internal Server Error');
-          return;
-        }
+        fs.readFile(storeInfoPath, 'utf-8', (err, storeInfoData) => {
+          if (err) {
+            console.error('Failed to read info.json:', err);
+            res.status(500).send('Internal Server Error');
+            return;
+          }
 
-        const inventoryMap = new Map(inventory.map(item => [item.id, item]));
-        invoices.sort((a, b) => b.id - a.id);
-        const customerMap = new Map(customers.map(c => [c.id, c]));
+          let customers, inventory, invoices, storeInfo;
+          try {
+            customers = JSON.parse(customerData);
+            inventory = JSON.parse(inventoryData);
+            invoices = JSON.parse(invoiceData);
+            storeInfo = JSON.parse(storeInfoData);
+          } catch {
+            console.error('Failed to parse JSON');
+            res.status(500).send('Internal Server Error');
+            return;
+          }
 
-        invoices = invoices.map(inv => {
-          const enhancedItems = inv.inventory.map(item => {
-            const foundItem = inventoryMap.get(item.id_item);
+          const inventoryMap = new Map(inventory.map(item => [item.id, item]));
+          const customerMap = new Map(customers.map(c => [c.id, c]));
+
+          invoices.sort((a, b) => b.id - a.id);
+
+          invoices = invoices.map(inv => {
+            const enhancedItems = inv.inventory.map(item => {
+              const foundItem = inventoryMap.get(item.id_item);
+              return {
+                ...item,
+                item: foundItem?.item || 'Unknown',
+                price: foundItem?.price || 0
+              };
+            });
+
             return {
-              ...item,
-              item: foundItem?.item || 'Unknown',
-              price: foundItem?.price || 0
+              ...inv,
+              id_customer: Number(inv.id_customer),
+              customer: customerMap.get(Number(inv.id_customer)) || { name: 'Unknown' },
+              inventory: enhancedItems
             };
           });
 
-          return {
-            ...inv,
-            id_customer: Number(inv.id_customer),
-            customer: customerMap.get(Number(inv.id_customer)) || { name: 'Unknown' },
-            inventory: enhancedItems
-          };
-        });
+          const logoPath = findStoreLogo() || '/assets/images/logo.png';
 
-        res.render('pos-invoice', {
-          darkMode,
-          title: 'Invoice | M-WA',
-          customers,
-          inventory,
-          invoices
+          res.render('pos-invoice', {
+            darkMode,
+            title: 'Invoice | M-WA',
+            customers,
+            inventory,
+            invoices,
+            storeInfo,
+            logoPath
+          });
         });
       });
     });
@@ -724,156 +753,169 @@ function report(res, darkMode) {
             fs.readFile(writeOffStockRecordPath, 'utf-8', (err, writeOffStockData) => {
               if (err) return res.status(500).send('Failed to read write-off-stock-record.json');
 
-              let invoices = [];
-              let inventory = [];
-              let customers = [];
-              let vendors = [];
-              let addStocks = [];
-              let writeOffStocks = [];
+              fs.readFile(storeInfoPath, 'utf-8', (err, storeInfoData) => {
+                if (err) {
+                  console.error('Failed to read info.json:', err);
+                  return res.status(500).send('Failed to read info.json');
+                }
 
-              try {
-                invoices = JSON.parse(invoiceData);
-                inventory = JSON.parse(inventoryData);
-                customers = JSON.parse(customerData);
-                vendors = JSON.parse(vendorData);
-                addStocks = JSON.parse(addStockData);
-                writeOffStocks = JSON.parse(writeOffStockData);
-              } catch {
-                return res.status(500).send('Invalid JSON');
-              }
+                let invoices = [];
+                let inventory = [];
+                let customers = [];
+                let vendors = [];
+                let addStocks = [];
+                let writeOffStocks = [];
+                let storeInfo;
 
-              const inventoryMap = new Map(inventory.map(item => [item.id, item]));
-              const customerMap = new Map(customers.map(c => [Number(c.id), c]));
-              const vendorMap = new Map(vendors.map(v => [v.id, v.vendor]));
+                try {
+                  invoices = JSON.parse(invoiceData);
+                  inventory = JSON.parse(inventoryData);
+                  customers = JSON.parse(customerData);
+                  vendors = JSON.parse(vendorData);
+                  addStocks = JSON.parse(addStockData);
+                  writeOffStocks = JSON.parse(writeOffStockData);
+                  storeInfo = JSON.parse(storeInfoData);
+                } catch {
+                  return res.status(500).send('Invalid JSON');
+                }
 
-              invoices = invoices.map(inv => {
-                let totalQty = 0;
-                let totalCOGS = 0;
-                let totalPrice = 0;
+                const inventoryMap = new Map(inventory.map(item => [item.id, item]));
+                const customerMap = new Map(customers.map(c => [Number(c.id), c]));
+                const vendorMap = new Map(vendors.map(v => [v.id, v.vendor]));
 
-                const enrichedItems = inv.inventory.map(i => {
-                  const item = inventoryMap.get(i.id_item);
-                  const qty = Number(i.qty) || 0;
-                  const price = Number(item?.price || 0);
-                  const cogs = Number(item?.cogs || 0);
-                  const vendor = vendorMap.get(item?.vendor_id) || 'Unknown';
+                invoices = invoices.map(inv => {
+                  let totalQty = 0;
+                  let totalCOGS = 0;
+                  let totalPrice = 0;
 
-                  totalQty += qty;
-                  totalPrice += price * qty;
-                  totalCOGS += cogs * qty;
+                  const enrichedItems = inv.inventory.map(i => {
+                    const item = inventoryMap.get(i.id_item);
+                    const qty = Number(i.qty) || 0;
+                    const price = Number(item?.price || 0);
+                    const cogs = Number(item?.cogs || 0);
+                    const vendor = vendorMap.get(item?.vendor_id) || 'Unknown';
+
+                    totalQty += qty;
+                    totalPrice += price * qty;
+                    totalCOGS += cogs * qty;
+
+                    return {
+                      ...i,
+                      item: item?.item || 'Unknown',
+                      price,
+                      cogs,
+                      vendor
+                    };
+                  });
+
+                  const firstItem = enrichedItems[0];
+                  const vendorName = firstItem?.vendor || 'Unknown';
 
                   return {
-                    ...i,
-                    item: item?.item || 'Unknown',
-                    price,
-                    cogs,
-                    vendor
+                    ...inv,
+                    customer: customerMap.get(Number(inv.id_customer)) || { name: 'Unknown' },
+                    inventory: enrichedItems,
+                    itemCount: enrichedItems.length,
+                    totalQty,
+                    totalPrice,
+                    totalCOGS,
+                    profit: totalPrice - totalCOGS,
+                    vendor: vendorName
                   };
                 });
 
-                const firstItem = enrichedItems[0];
-                const vendorName = firstItem?.vendor || 'Unknown';
+                let invoicesByVendor = [];
 
-                return {
-                  ...inv,
-                  customer: customerMap.get(Number(inv.id_customer)) || { name: 'Unknown' },
-                  inventory: enrichedItems,
-                  itemCount: enrichedItems.length,
-                  totalQty,
-                  totalPrice,
-                  totalCOGS,
-                  profit: totalPrice - totalCOGS,
-                  vendor: vendorName
-                };
-              });
+                invoices.forEach(inv => {
+                  const itemsByVendor = {};
 
-              let invoicesByVendor = [];
+                  inv.inventory.forEach(i => {
+                    const item = inventoryMap.get(i.id_item);
+                    const qty = Number(i.qty) || 0;
+                    const price = Number(item?.price || 0);
+                    const cogs = Number(item?.cogs || 0);
+                    const vendorName = vendorMap.get(item?.vendor_id) || 'Unknown';
 
-              invoices.forEach(inv => {
-                const itemsByVendor = {};
+                    if (!itemsByVendor[vendorName]) {
+                      itemsByVendor[vendorName] = {
+                        vendor: vendorName,
+                        invoice: inv.invoice,
+                        date: inv.date,
+                        customer: customerMap.get(Number(inv.id_customer)) || { name: 'Unknown' },
+                        inventory: [],
+                        totalQty: 0,
+                        totalPrice: 0,
+                        totalCOGS: 0,
+                        profit: 0,
+                      };
+                    }
 
-                inv.inventory.forEach(i => {
-                  const item = inventoryMap.get(i.id_item);
-                  const qty = Number(i.qty) || 0;
-                  const price = Number(item?.price || 0);
-                  const cogs = Number(item?.cogs || 0);
-                  const vendorName = vendorMap.get(item?.vendor_id) || 'Unknown';
-
-                  if (!itemsByVendor[vendorName]) {
-                    itemsByVendor[vendorName] = {
+                    itemsByVendor[vendorName].inventory.push({
+                      ...i,
+                      item: item?.item || 'Unknown',
+                      price,
+                      cogs,
+                      qty,
                       vendor: vendorName,
-                      invoice: inv.invoice,
-                      date: inv.date,
-                      customer: customerMap.get(Number(inv.id_customer)) || { name: 'Unknown' },
-                      inventory: [],
-                      totalQty: 0,
-                      totalPrice: 0,
-                      totalCOGS: 0,
-                      profit: 0,
-                    };
-                  }
+                    });
 
-                  itemsByVendor[vendorName].inventory.push({
-                    ...i,
-                    item: item?.item || 'Unknown',
-                    price,
-                    cogs,
-                    qty,
-                    vendor: vendorName,
+                    itemsByVendor[vendorName].totalQty += qty;
+                    itemsByVendor[vendorName].totalPrice += price * qty;
+                    itemsByVendor[vendorName].totalCOGS += cogs * qty;
                   });
 
-                  itemsByVendor[vendorName].totalQty += qty;
-                  itemsByVendor[vendorName].totalPrice += price * qty;
-                  itemsByVendor[vendorName].totalCOGS += cogs * qty;
+                  Object.values(itemsByVendor).forEach(vendorInvoice => {
+                    vendorInvoice.profit = vendorInvoice.totalPrice - vendorInvoice.totalCOGS;
+                    invoicesByVendor.push(vendorInvoice);
+                  });
                 });
 
-                Object.values(itemsByVendor).forEach(vendorInvoice => {
-                  vendorInvoice.profit = vendorInvoice.totalPrice - vendorInvoice.totalCOGS;
-                  invoicesByVendor.push(vendorInvoice);
+                let totalItem = 0;
+                let totalQty = 0;
+                let totalCOGS = 0;
+                let totalPrice = 0;
+                let totalProfit = 0;
+
+                invoicesByVendor.forEach(inv => {
+                  totalItem += inv.inventory.length;
+                  totalQty += inv.totalQty;
+                  totalCOGS += inv.totalCOGS;
+                  totalPrice += inv.totalPrice;
+                  totalProfit += inv.profit;
                 });
-              });
 
-              let totalItem = 0;
-              let totalQty = 0;
-              let totalCOGS = 0;
-              let totalPrice = 0;
-              let totalProfit = 0;
+                const totalInvoiceCount = invoices.length;
+                const totalInvoiceAmount = invoices.reduce((sum, inv) => sum + Number(inv.total || 0), 0);
+                const totalCustomers = customers.length;
+                const totalVendors = vendors.length;
 
-              invoicesByVendor.forEach(inv => {
-                totalItem += inv.inventory.length;
-                totalQty += inv.totalQty;
-                totalCOGS += inv.totalCOGS;
-                totalPrice += inv.totalPrice;
-                totalProfit += inv.profit;
-              });
+                addStocks.sort((a, b) => b.id - a.id);
+                writeOffStocks.sort((a, b) => b.id - a.id);
 
-              const totalInvoiceCount = invoices.length;
-              const totalInvoiceAmount = invoices.reduce((sum, inv) => sum + Number(inv.total || 0), 0);
-              const totalCustomers = customers.length;
-              const totalVendors = vendors.length;
+                const logoPath = findStoreLogo() || '/assets/images/logo.png';
 
-              addStocks.sort((a, b) => b.id - a.id);
-              writeOffStocks.sort((a, b) => b.id - a.id);
-
-              res.render('pos-report', {
-                darkMode,
-                title: 'Report | M-WA',
-                invoices,
-                invoicesByVendor,
-                totalItem,
-                totalQty,
-                totalCOGS,
-                totalPrice,
-                totalProfit,
-                totalInvoiceCount,
-                totalInvoiceAmount,
-                totalCustomers,
-                totalVendors,
-                addStocks,
-                writeOffStocks,
-                inventoryMap,
-                customers,
-                inventory
+                res.render('pos-report', {
+                  darkMode,
+                  title: 'Report | M-WA',
+                  invoices,
+                  invoicesByVendor,
+                  totalItem,
+                  totalQty,
+                  totalCOGS,
+                  totalPrice,
+                  totalProfit,
+                  totalInvoiceCount,
+                  totalInvoiceAmount,
+                  totalCustomers,
+                  totalVendors,
+                  addStocks,
+                  writeOffStocks,
+                  inventoryMap,
+                  customers,
+                  inventory,
+                  storeInfo,
+                  logoPath
+                });
               });
             });
           });

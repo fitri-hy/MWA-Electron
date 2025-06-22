@@ -32,7 +32,7 @@
 			<div class="flex items-center justify-between gap-4">
 				<div class="w-full flex flex-col gap-1 max-w-xs relative">
 				  <label>Customer</label>
-				  <div id="customerCustomSelect" class="w-full px-4 py-2 rounded bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-green-400 dark:focus:border-green-800 cursor-pointer select-none">
+				  <div id="customerCustomSelect" class="w-full max-w-xs px-4 py-2 rounded bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-green-400 dark:focus:border-green-800 cursor-pointer">
 					-- Select Customer --
 				  </div>
 				  <div id="customerDropdown" class="absolute top-full left-0 right-0 bg-white dark:bg-neutral-900 border border-gray-300 dark:border-neutral-700 mt-1 rounded shadow max-h-64 overflow-auto hidden z-20">
@@ -391,18 +391,16 @@
 		cs_optionsList.innerHTML = '';
 		const filtered = cs_options.filter(opt => opt.text.toLowerCase().includes(filter.toLowerCase()));
 		if (filtered.length === 0) {
-		  cs_optionsList.innerHTML = '<li style="padding:8px; color:#888;">No results found</li>';
+		  cs_optionsList.innerHTML = '<li class="p-2">No results found.</li>';
 		  return;
 		}
 		filtered.forEach(opt => {
 		  const li = document.createElement('li');
 		  li.textContent = opt.text;
 		  li.dataset.value = opt.value;
-		  li.style.padding = '8px';
-		  li.style.cursor = 'pointer';
-		  li.style.userSelect = 'none';
-		  li.onmouseenter = () => li.style.backgroundColor = '#eee';
-		  li.onmouseleave = () => li.style.backgroundColor = '';
+		  li.classList.add(
+			'p-2', 'cursor-pointer', 'hover:bg-green-100', 'dark:hover:bg-green-800'
+		  );
 		  li.onclick = () => {
 			if (opt.value === 'new') {
 			  cs_modal.classList.remove('hidden');
@@ -511,9 +509,9 @@
 
 		  let html = `
 		  <div class="flex flex-col gap-2 w-full justify-center items-center mb-4 border-b border-gray-200 dark:border-neutral-700">
-			<img class="h-20 w-20 object-cover mx-auto" src="/assets/images/logo.png" alt="logo" />
+			<img class="h-16 w-auto object-contain mx-auto" src="<%= logoPath %>" alt="logo" onerror="this.onerror=null; this.src='/assets/images/logo.png';" />
 			<div class="w-full text-center">
-			  <h2 class="text-3xl font-bold">M-WA</h2>
+			  <h2 class="text-2xl font-bold"><%= (storeInfo && storeInfo[0] && storeInfo[0].storeName) ? storeInfo[0].storeName : 'M-WA' %></h2>
 			  <div class="font-semibold w-full flex justify-between gap-4 items-center mt-4">
 				<p>${inv.invoice}</p>
 				<p>${inv.date}</p>

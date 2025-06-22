@@ -315,6 +315,8 @@ app.get('/setting', (req, res) => {
   const settingPath = path.join(configDir, 'setting.json');
   const geminiPath = path.join(configDir, 'gemini.json');
   const floatingPath = path.join(configDir, 'floating.json');
+  const storeDir = path.join(homeDir, '.config', 'M-WA', 'store');
+  const storeInfoPath = path.join(storeDir, 'info.json');
 
   let settings = { password: '', enabled: false };
   let gemini = {
@@ -324,6 +326,21 @@ app.get('/setting', (req, res) => {
   };
 
   let floating = {};
+  let storeInfo = null;
+  let logoPath = null;
+
+  function findStoreLogo() {
+    if (!fs.existsSync(storeDir)) return null;
+
+    const files = fs.readdirSync(storeDir);
+    const logoFile = files.find(file => /^store\.(png|jpg|jpeg|svg)$/i.test(file));
+    if (logoFile) {
+      const fullPath = path.join(storeDir, logoFile);
+      const normalizedPath = fullPath.replace(/\\/g, '/');
+      return 'file://' + encodeURI(normalizedPath);
+    }
+    return null;
+  }
 
   function readFloatingAsObject(filePath) {
     if (!fs.existsSync(filePath)) {
@@ -355,7 +372,14 @@ app.get('/setting', (req, res) => {
       gemini = { ...gemini, ...data };
     }
 
+    if (fs.existsSync(storeInfoPath)) {
+      const infoRaw = fs.readFileSync(storeInfoPath, 'utf8');
+      storeInfo = JSON.parse(infoRaw);
+    }
+
     floating = readFloatingAsObject(floatingPath);
+    logoPath = findStoreLogo() || '/assets/images/logo.png';
+
   } catch (err) {
     console.error('Error reading config files:', err);
   }
@@ -370,6 +394,8 @@ app.get('/setting', (req, res) => {
     success_msg: req.flash('success_msg'),
     error_msg: req.flash('error_msg'),
     ...floating,
+    storeInfo,
+    logoPath
   });
 });
 
@@ -476,6 +502,69 @@ app.post('/setting/floating/notes', (req, res) => {
   } else {
     req.flash('error_msg', 'Failed to update Floating Notes');
   }
+  res.redirect('/setting');
+});
+
+app.post('/setting/invoice-logo', (req, res) => {
+  const storeDir = path.join(os.homedir(), '.config', 'M-WA', 'store');
+
+  const uploadLogo = multer({
+    storage: multer.diskStorage({
+      destination: function (req, file, cb) {
+        if (!fs.existsSync(storeDir)) fs.mkdirSync(storeDir, { recursive: true });
+        cb(null, storeDir);
+      },
+      filename: function (req, file, cb) {
+        const ext = path.extname(file.originalname).toLowerCase();
+        const logoPattern = /^store\.(png|jpg|jpeg|svg)$/i;
+
+        const files = fs.readdirSync(storeDir);
+        files.forEach(file => {
+          if (logoPattern.test(file)) {
+            fs.unlinkSync(path.join(storeDir, file));
+          }
+        });
+
+        cb(null, `store${ext}`);
+      }
+    }),
+    fileFilter: (req, file, cb) => {
+      const allowed = ['image/png', 'image/jpeg', 'image/svg+xml'];
+      if (allowed.includes(file.mimetype)) cb(null, true);
+      else cb(new Error('Only PNG, JPG, and SVG files are allowed'));
+    }
+  }).single('logo');
+
+  uploadLogo(req, res, (err) => {
+    if (err) {
+      console.error('Logo upload error:', err);
+      req.flash('error_msg', err.message || 'Failed to upload logo');
+    } else if (!req.file) {
+      req.flash('error_msg', 'No logo uploaded');
+    } else {
+      req.flash('success_msg', 'Logo updated successfully');
+    }
+    res.redirect('/setting');
+  });
+});
+
+app.post('/setting/invoice-storename', (req, res) => {
+  const storeInfoPath = path.join(os.homedir(), '.config', 'M-WA', 'store', 'info.json');
+  const newStoreName = req.body.storeInfo || 'M-WA';
+  const storeInfo = [{ storeName: newStoreName }];
+
+  try {
+    if (!fs.existsSync(path.dirname(storeInfoPath))) {
+      fs.mkdirSync(path.dirname(storeInfoPath), { recursive: true });
+    }
+
+    fs.writeFileSync(storeInfoPath, JSON.stringify(storeInfo, null, 2), 'utf8');
+    req.flash('success_msg', 'Store name saved');
+  } catch (err) {
+    console.error('Failed to save store name:', err);
+    req.flash('error_msg', 'Failed to save store name');
+  }
+
   res.redirect('/setting');
 });
 

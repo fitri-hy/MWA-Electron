@@ -8,6 +8,39 @@
 		<div class="break-inside-avoid flex flex-col gap-4 bg-white dark:bg-neutral-900 p-4 border border-gray-100 dark:border-neutral-700 rounded">
 			<div class="w-full flex items-center justify-between gap-4 border-b border-gray-200 dark:border-neutral-700 pb-4">
 				<h2 class="text-xl font-semibold">
+					Invoice
+				</h2>
+			</div>
+			<div class="flex flex-col gap-4">
+				<div class="w-20 h-auto object-contain">
+				  <img src="<%= logoPath %>" alt="Current Store Logo" class="w-full h-full object-cover" onerror="this.src='/assets/images/logo.png'"/>
+				</div>
+				<form action="/setting/invoice-logo" method="POST" enctype="multipart/form-data" id="logoUploadForm">
+					<label for="logoPath" class="cursor-pointer block font-medium mb-1">Store Logo</label>
+					<input id="logoPath" name="logo" type="file" accept="image/png, image/jpeg, image/svg+xml" class="block w-full p-3 rounded bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-green-400 dark:focus:border-green-800 file:rounded file:border-none file:py-1 file:px-2 file:bg-green-100 file:hover:bg-green-200 dark:file:bg-green-900 dark:file:hover:bg-green-800 file:text-green-700 dark:file:text-white" onchange="document.getElementById('logoUploadForm').submit()" required />
+				</form>
+				<form action="/setting/invoice-storename" method="POST">
+					<div class="w-full flex flex-col gap-4">
+						<div class="w-full flex flex-col gap-1">
+							<label>
+								Store Name
+							</label>
+							<div class="relative">
+								<input name="storeInfo" type="text" value="<%= (storeInfo && storeInfo[0] && storeInfo[0].storeName) ? storeInfo[0].storeName : 'M-WA' %>" placeholder="Enter store name" class="w-full p-3 rounded bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 focus:outline-none focus:border-green-400 dark:focus:border-green-800" required />
+							</div>
+						</div>
+					</div>
+					<div class="flex justify-start mt-4">
+						<button type="submit" class="px-4 py-2 rounded bg-green-500 hover:bg-green-600 dark:bg-green-700 dark:hover:bg-green-600 text-white hover:scale-105 hover:duration-300 transition-all">
+							Save
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+		<div class="mt-4 break-inside-avoid flex flex-col gap-4 bg-white dark:bg-neutral-900 p-4 border border-gray-100 dark:border-neutral-700 rounded">
+			<div class="w-full flex items-center justify-between gap-4 border-b border-gray-200 dark:border-neutral-700 pb-4">
+				<h2 class="text-xl font-semibold">
 					Lockscreen
 				</h2>
 				<form id="toggleForm" action="/setting/toggle" method="POST">
@@ -96,7 +129,7 @@
 			</div>
 			<span class="italic">Please reload the page to see the latest changes.</span>
 		</div>
-		<div class="break-inside-avoid flex flex-col gap-4 bg-white dark:bg-neutral-900 p-4 border border-gray-100 dark:border-neutral-700 rounded">
+		<div class="mt-4 break-inside-avoid flex flex-col gap-4 bg-white dark:bg-neutral-900 p-4 border border-gray-100 dark:border-neutral-700 rounded">
 			<div class="w-full flex items-center justify-between gap-4 border-b border-gray-200 dark:border-neutral-700 pb-4">
 				<h2 class="text-xl font-semibold">
 					Gemini AI

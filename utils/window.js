@@ -10,10 +10,10 @@ function createWindow(tabsFilePath, tabsData) {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
 
   const win = new BrowserWindow({
-    width: Math.min(1000, width * 0.8),
-    height: Math.min(700, height * 0.8),
-    minWidth: 800,
-    minHeight: 400,
+    width: Math.min(1024, width * 0.8),
+    height: Math.min(768, height * 0.8),
+    minWidth: 860,
+    minHeight: 650,
     show: false,
 	icon: iconPath,
     webPreferences: {

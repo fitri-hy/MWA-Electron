@@ -9,10 +9,10 @@ function createDocsWindow() {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
 
   const win = new BrowserWindow({
-    width: Math.min(1000, width * 0.8),
-    height: Math.min(700, height * 0.8),
+    width: Math.min(900, width * 0.8),
+    height: Math.min(550, height * 0.8),
     minWidth: 800,
-    minHeight: 400,
+    minHeight: 450,
     icon: iconPath,
     webPreferences: {
       nodeIntegration: false,

@@ -37,6 +37,7 @@ const pathsToEnsure = [
   path.join(basePath, 'pos', 'vendor.json'),
   path.join(basePath, 'notes', 'note.json'),
   path.join(basePath, 'auto-reply', 'autoReply.json'),
+  path.join(basePath, 'store', 'info.json'),
   firstMessagePath,
 ];
 
@@ -90,6 +91,8 @@ function ensureFileWithEmptyArrayOrObject(filePath) {
       content = JSON.stringify(defaultFirstMessage, null, 2);
     } else if (filePath.endsWith('autoReply.json')) {
       content = JSON.stringify(defaultAutoReply, null, 2);
+    } else if (filePath.endsWith(path.join('store', 'info.json'))) {
+      content = JSON.stringify([{ storeName: "M-WA" }], null, 2);
     }
 
     fs.writeFileSync(filePath, content, 'utf-8');
